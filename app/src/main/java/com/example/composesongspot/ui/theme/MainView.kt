@@ -128,7 +128,7 @@ fun MainView() {
         Scaffold(
             bottomBar = bottomBar,
             topBar = {
-                TopAppBar(title = { Text("Home") },
+                TopAppBar(title = { Text("Song Spot") },
                     actions = {
                         IconButton(
                             onClick = {
@@ -142,7 +142,6 @@ fun MainView() {
                             }
                         ){
                             Icon(imageVector = Icons.Default.MoreVert, contentDescription = null)
-
                         }
 
                     },
@@ -219,11 +218,12 @@ fun Navigation(navController: NavController, viewModel: MainViewModel, pd: Paddi
         startDestination = Screen.DrawerScreen.Account.route,
         modifier = Modifier.padding(pd)
     ) {
-
-        composable(Screen.DrawerScreen.Account.route) {
-            AccountView()
+        composable(Screen.DrawerScreen.SignIn.route) {
+            SignIn()
         }
-
+        composable(Screen.DrawerScreen.Account.route) {
+            Account()
+        }
         composable(Screen.BottomScreen.Home.bRoute) {
             Home()
         }
@@ -233,6 +233,23 @@ fun Navigation(navController: NavController, viewModel: MainViewModel, pd: Paddi
         composable(Screen.BottomScreen.Library.bRoute) {
             FindSong()
         }
+        composable(Screen.BottomSheet.About.route){
+            About()
+        }
+        composable(Screen.BottomSheet.Settings.route){
+            Settings()
+        }
+    }
+}
+
+//TODO: Sign up - Sign in pages navigation
+@Composable
+fun RegisterNavigation(navController: NavController,pd: PaddingValues) {
+    NavHost(navController = navController as NavHostController,
+        startDestination = "SignIn",
+        ) {
+        composable("signIn"){ }
+        composable("signup"){ }
     }
 }
 
@@ -251,22 +268,9 @@ fun MoreButtomSheet(modifier: Modifier) {
                     modifier = Modifier.padding(end = 8.dp),
                     painter = painterResource(id = R.drawable.baseline_settings_24),
                     contentDescription = "Settings"
-
                 )
                 Text(
                     text = "Settings",
-                    fontSize = 20.sp,
-                    color = Color.DarkGray
-                )
-            }
-            Row(modifier = modifier.padding(16.dp)) {
-                Icon(
-                    modifier = Modifier.padding(end = 8.dp),
-                    painter = painterResource(id = R.drawable.baseline_ios_share_24),
-                    contentDescription = "Share"
-                )
-                Text(
-                    text = "Share",
                     fontSize = 20.sp,
                     color = Color.DarkGray
                 )

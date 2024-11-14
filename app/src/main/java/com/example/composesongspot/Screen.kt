@@ -43,12 +43,27 @@ sealed class Screen(val title: String, val route: String) {
             "account",
             R.drawable.baseline_account_circle_24
         )
-        object AddAccount : DrawerScreen(
-            "Add Account",
-            "add account",
+        object SignIn : DrawerScreen(
+            "Sign In",
+            "sign in",
             R.drawable.baseline_person_add_alt_1_24
         )
-
+    }
+    sealed class BottomSheet(
+        fTitle: String,
+        fRoute: String,
+        @DrawableRes val icon: Int
+    ) : Screen(fTitle, fRoute) {
+        object Settings : DrawerScreen(
+            "Settings",
+            "settings",
+            R.drawable.baseline_settings_24
+        )
+        object About : DrawerScreen(
+            "About",
+            "about",
+            R.drawable.baseline_question_mark_24
+        )
     }
 }
 val screensInBottom = listOf(
@@ -59,9 +74,13 @@ val screensInBottom = listOf(
 
 val screensInDrawer = listOf(
     Screen.DrawerScreen.Account,
-    Screen.DrawerScreen.AddAccount
-
+    Screen.DrawerScreen.SignIn
 )
+val screensInBottomSheet = listOf(
+    Screen.BottomSheet.Settings,
+    Screen.BottomSheet.About
+)
+
 @Composable
 fun BottomNavigationBar(
     currentScreen: Screen.BottomScreen,
