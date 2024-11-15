@@ -6,6 +6,4 @@ import androidx.compose.runtime.Composable
 @Composable
 fun FindSong() {
     Text(text = "Find Page")
-
-
 }

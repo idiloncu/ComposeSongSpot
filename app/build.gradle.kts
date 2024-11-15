@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.android)
     id ("kotlin-kapt")
     id ("com.google.devtools.ksp")
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -52,6 +53,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.firebase.auth)
+    implementation(libs.androidx.runtime.livedata)
     val nav_version = "2.7.5"
     val compose_version = "1.6.0-alpha08"
     implementation("androidx.navigation:navigation-compose:$nav_version")

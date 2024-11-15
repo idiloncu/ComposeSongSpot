@@ -32,6 +32,15 @@ sealed class Screen(val title: String, val route: String) {
             R.drawable.baseline_chat_24
         )
     }
+    sealed class CommentScreen(
+        val cTitle: String,
+        val cRoute: String,
+    ):Screen(cTitle,cRoute){
+        object Comment : CommentScreen(
+            "Comment",
+            "comment"
+        )
+    }
 
     sealed class DrawerScreen(
         val dTitle: String,
@@ -46,7 +55,17 @@ sealed class Screen(val title: String, val route: String) {
         object SignIn : DrawerScreen(
             "Sign In",
             "sign in",
+            R.drawable.baseline_login
+        )
+        object Signup : DrawerScreen(
+            "Sign Up",
+            "sign up",
             R.drawable.baseline_person_add_alt_1_24
+        )
+        object SignOut : DrawerScreen(
+            "Sign Out",
+            "sign out",
+            R.drawable.baseline_logout
         )
     }
     sealed class BottomSheet(
@@ -65,6 +84,7 @@ sealed class Screen(val title: String, val route: String) {
             R.drawable.baseline_question_mark_24
         )
     }
+
 }
 val screensInBottom = listOf(
     Screen.BottomScreen.Home,
@@ -74,11 +94,14 @@ val screensInBottom = listOf(
 
 val screensInDrawer = listOf(
     Screen.DrawerScreen.Account,
-    Screen.DrawerScreen.SignIn
+    Screen.DrawerScreen.SignIn,
+    Screen.DrawerScreen.Signup,
+    Screen.DrawerScreen.SignOut
 )
-val screensInBottomSheet = listOf(
-    Screen.BottomSheet.Settings,
-    Screen.BottomSheet.About
+
+
+val screensInComment = listOf(
+    Screen.CommentScreen.Comment
 )
 
 @Composable
@@ -87,7 +110,7 @@ fun BottomNavigationBar(
     onScreenSelected: (Screen.BottomScreen) -> Unit
 ) {
     NavigationBar(
-        containerColor = Color.Blue,  // Arka plan rengini ayarlayın
+        containerColor = Color.Black,  // Arka plan rengini ayarlayın
         contentColor = Color.White    // İçerik rengini ayarlayın
     ) {
         Screen.BottomScreen::class.sealedSubclasses.forEach { subclass ->
