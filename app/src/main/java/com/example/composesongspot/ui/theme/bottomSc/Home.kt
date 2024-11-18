@@ -1,4 +1,4 @@
-package com.example.composesongspot.ui.theme
+package com.example.composesongspot.ui.theme.bottomSc
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,7 +23,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import com.example.composesongspot.Screen
+import com.example.composesongspot.ui.theme.MusicCardInfo
+import com.example.composesongspot.ui.theme.getAllMusicCardInfo
 
 @Composable
 fun Home(navController: NavController) {
@@ -37,7 +37,7 @@ fun LazyColumnDemo(navController: NavController) {
     val myList = getAllMusicCardInfo()
     LazyColumn(content = {
         itemsIndexed(myList, itemContent = { index, item ->
-            CardItems(item = item, rememberNavController())
+            CardItems(item = item, navController=navController)
         })
     })
 }
@@ -49,7 +49,7 @@ fun CardItems(item: MusicCardInfo, navController: NavController) {
             .fillMaxWidth()
             .padding(16.dp)
             .clickable {
-                navController.navigate("Comment")
+                navController.navigate(Screen.CommentScreen.Comment.cRoute)
             }
     ) {
         Image(painter = painterResource(id = item.albumPhoto), contentDescription = item.albumName,

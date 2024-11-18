@@ -85,6 +85,16 @@ sealed class Screen(val title: String, val route: String) {
         )
     }
 
+    sealed class Comment(
+        val cTitle: String,
+        val cRoute: String,
+    ):Screen(cTitle,cRoute){
+        object Comment : CommentScreen(
+            "Comment",
+            "comment"
+        )
+    }
+
 }
 val screensInBottom = listOf(
     Screen.BottomScreen.Home,
@@ -98,7 +108,6 @@ val screensInDrawer = listOf(
     Screen.DrawerScreen.Signup,
     Screen.DrawerScreen.SignOut
 )
-
 
 val screensInComment = listOf(
     Screen.CommentScreen.Comment

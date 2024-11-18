@@ -1,4 +1,4 @@
-package com.example.composesongspot
+package com.example.composesongspot.ui.theme.bottomSc
 
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable

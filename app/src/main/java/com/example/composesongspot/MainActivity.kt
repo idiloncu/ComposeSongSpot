@@ -15,7 +15,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.example.composesongspot.ui.theme.ComposeSongSpotTheme
-import com.example.composesongspot.ui.theme.Home
+import com.example.composesongspot.ui.theme.bottomSc.Home
 import com.example.composesongspot.ui.theme.MainView
 
 class MainActivity : ComponentActivity() {

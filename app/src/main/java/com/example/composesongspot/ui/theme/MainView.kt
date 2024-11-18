@@ -50,13 +50,21 @@
     import androidx.navigation.compose.composable
     import androidx.navigation.compose.currentBackStackEntryAsState
     import androidx.navigation.compose.rememberNavController
-    import com.example.composesongspot.FindSong
+    import com.example.composesongspot.ui.theme.bottomSc.FindSong
     import com.example.composesongspot.MainViewModel
-    import com.example.composesongspot.Message
+    import com.example.composesongspot.ui.theme.bottomSc.Message
     import com.example.composesongspot.R
     import com.example.composesongspot.Screen
     import com.example.composesongspot.screensInBottom
     import com.example.composesongspot.screensInDrawer
+    import com.example.composesongspot.ui.theme.bottomSc.Comment
+    import com.example.composesongspot.ui.theme.bottomSc.Home
+    import com.example.composesongspot.ui.theme.bottomSheetSc.About
+    import com.example.composesongspot.ui.theme.bottomSheetSc.Settings
+    import com.example.composesongspot.ui.theme.drawerSc.Account
+    import com.example.composesongspot.ui.theme.drawerSc.SignIn
+    import com.example.composesongspot.ui.theme.drawerSc.SignOut
+    import com.example.composesongspot.ui.theme.drawerSc.Signup
     import kotlinx.coroutines.CoroutineScope
     import kotlinx.coroutines.launch
 
@@ -123,7 +131,7 @@
                 topEnd = roundedCornerRadius
             ),
             sheetContent = {
-                MoreButtomSheet(navController = controller,modifier = modifier)
+                MoreButtonSheet(navController = controller,modifier = modifier)
             }) {
             Scaffold(
                 bottomBar = bottomBar,
@@ -179,7 +187,6 @@
                 }
             ) {
                 Navigation(navController = controller, viewModel = viewModel, pd = it)
-                AccountDialog(dialogOpen = dialogOpen)
             }
         }
     }
@@ -253,11 +260,14 @@
             composable(Screen.BottomSheet.Settings.dRoute) {
                 Settings(navController)
             }
+            composable(Screen.CommentScreen.Comment.cRoute){
+                Comment(navController)
+            }
         }
     }
 
     @Composable
-    fun MoreButtomSheet(modifier: Modifier, navController: NavController) {
+    fun MoreButtonSheet(modifier: Modifier, navController: NavController) {
         Box(
             Modifier
                 .fillMaxWidth()

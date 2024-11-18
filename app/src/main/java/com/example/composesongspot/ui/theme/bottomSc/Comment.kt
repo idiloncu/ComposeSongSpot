@@ -1,4 +1,4 @@
-package com.example.composesongspot.ui.theme
+package com.example.composesongspot.ui.theme.bottomSc
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Text
