@@ -41,6 +41,15 @@ sealed class Screen(val title: String, val route: String) {
             "comment"
         )
     }
+    sealed class ChatScreen(
+        val hTitle: String,
+        val hRoute: String,
+    ):Screen(hTitle,hRoute){
+        object ChatPage : ChatScreen(
+            "Chat",
+            "chat"
+        )
+    }
 
     sealed class DrawerScreen(
         val dTitle: String,

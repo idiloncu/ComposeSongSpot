@@ -12,8 +12,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.composesongspot.AuthState
-import com.example.composesongspot.AuthViewModel
+import com.example.composesongspot.ui.theme.ViewModel.AuthState
+import com.example.composesongspot.ui.theme.ViewModel.AuthViewModel
 
 @Composable
 fun SignOut(navController: NavController, authViewModel: AuthViewModel) {

@@ -34,8 +34,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.composesongspot.AuthState
-import com.example.composesongspot.AuthViewModel
+import com.example.composesongspot.ui.theme.ViewModel.AuthState
+import com.example.composesongspot.ui.theme.ViewModel.AuthViewModel
 import com.example.composesongspot.R
 
 @Composable
