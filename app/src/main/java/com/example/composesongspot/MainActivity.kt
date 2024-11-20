@@ -15,9 +15,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.example.composesongspot.ui.theme.ComposeSongSpotTheme
-import com.example.composesongspot.ui.theme.bottomSc.Home
 import com.example.composesongspot.ui.theme.MainView
+import com.example.composesongspot.ui.theme.bottomSc.Home
+import dagger.hilt.android.AndroidEntryPoint
 
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {

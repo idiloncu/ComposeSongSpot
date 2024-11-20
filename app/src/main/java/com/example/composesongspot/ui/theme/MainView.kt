@@ -1,5 +1,6 @@
     package com.example.composesongspot.ui.theme
 
+    import android.util.Log
     import androidx.compose.foundation.background
     import androidx.compose.foundation.clickable
     import androidx.compose.foundation.layout.Arrangement
@@ -46,10 +47,12 @@
     import androidx.lifecycle.viewmodel.compose.viewModel
     import androidx.navigation.NavController
     import androidx.navigation.NavHostController
+    import androidx.navigation.NavType
     import androidx.navigation.compose.NavHost
     import androidx.navigation.compose.composable
     import androidx.navigation.compose.currentBackStackEntryAsState
     import androidx.navigation.compose.rememberNavController
+    import androidx.navigation.navArgument
     import com.example.composesongspot.ui.theme.bottomSc.FindSong
     import com.example.composesongspot.ui.theme.ViewModel.MainViewModel
     import com.example.composesongspot.ui.theme.bottomSc.Message
@@ -58,6 +61,7 @@
     import com.example.composesongspot.screensInBottom
     import com.example.composesongspot.screensInDrawer
     import com.example.composesongspot.ui.theme.bottomSc.ChatMessages
+    import com.example.composesongspot.ui.theme.bottomSc.ChatScr
     import com.example.composesongspot.ui.theme.bottomSc.Comment
     import com.example.composesongspot.ui.theme.bottomSc.Home
     import com.example.composesongspot.ui.theme.bottomSheetSc.About
@@ -265,7 +269,8 @@
                 Comment(navController)
             }
             composable(Screen.ChatScreen.ChatPage.hRoute){
-                ChatMessages(messages= emptyList(), onSendMessage = {})
+                val channelId = it.arguments?.getString("channelId") ?: ""
+                ChatScr(navController, channelId, receiverId="" )
             }
         }
     }

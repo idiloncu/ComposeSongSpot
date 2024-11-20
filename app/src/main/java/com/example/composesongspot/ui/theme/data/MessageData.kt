@@ -5,5 +5,6 @@ data class MessageData(
     val senderId: String = "",
     val message: String = "",
     val createdAt: Long = System.currentTimeMillis(),
-    val senderName: String = ""
+    val senderName: String = "",
+    val receiverId: String = ""
 )

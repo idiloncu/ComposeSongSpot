@@ -15,15 +15,15 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -32,93 +32,85 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.composesongspot.ui.theme.ViewModel.ChatViewModel
 import com.example.composesongspot.ui.theme.data.MessageData
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 
 @Composable
 fun ChatScr(
     navController: NavController,
     channelId: String,
-    viewModel: ChatViewModel = viewModel()
+    receiverId:String
 ) {
 
-    LaunchedEffect(key1 = true) {
-        viewModel.listenForMessages(channelId)
+    Scaffold {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it)
+        ) {
+            val viewModel: ChatViewModel = viewModel()
+            LaunchedEffect(key1 = true) {
+                viewModel.listenForMessages(channelId)
+            }
+            val messages = viewModel.message.collectAsState()
+            ChatMessages(
+                messages = messages.value,
+                onSendMessage = { message ->
+                    viewModel.sendMessage(channelId, message, receiverId)
+                }
+            )
+        }
     }
-    val messages = viewModel.message.collectAsState()
-    ChatMessages(messages = messages.value,
-        onSendMessage = { message ->
-            viewModel.sendMessage(channelId, message)
-        })
-    }
+}
 
 @Composable
 fun ChatMessages(
     messages: List<MessageData>,
-    onSendMessage: (String) -> Unit
+    onSendMessage: (String) -> Unit = {}
 ) {
     val hideKeyboardController = LocalSoftwareKeyboardController.current
-    val messages = remember { mutableStateListOf<MessageData>() }
-    val messageText = remember { mutableStateOf("") }
+    // val messages = remember { mutableStateListOf<MessageData>() }
+    val msg = remember { mutableStateOf("") }
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .padding(16.dp)
-        ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn {
             items(messages) { message ->
-                MessageItem(message)
+                MessageItem(message = message)
             }
         }
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .align(Alignment.BottomCenter)
+                .padding(8.dp)
+                .background(Color.LightGray), verticalAlignment = Alignment.CenterVertically
         ) {
 
             TextField(
-                value = messageText.value,
-                onValueChange = { messageText.value = it },
-                placeholder = { Text("Type a message...") },
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 8.dp),
+                value = msg.value,
+                onValueChange = { msg.value = it },
+                modifier = Modifier.weight(1f),
+                placeholder = { Text(text = "Type a message") },
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        hideKeyboardController?.hide()
-                    }
-                )
-
+                keyboardActions = KeyboardActions(onDone = {
+                    hideKeyboardController?.hide()
+                })
             )
-
-
-            IconButton(
-                onClick = {
-                    if (messageText.value.isNotEmpty()) {
-                        messages.add(MessageData(message = messageText.value, senderId = "You"))
-                        messageText.value = ""
-                    }
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Send,
-                    contentDescription = "Send",
-                    tint = MaterialTheme.colors.primary
-                )
+            IconButton(onClick = {
+                onSendMessage(msg.value)
+                msg.value = ""
+            }) {
+                Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = "send")
             }
         }
     }
 }
+
 
 //Chat bubble
 @Composable
