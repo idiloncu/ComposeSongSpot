@@ -5,4 +5,6 @@
     <string name="about_part3">The app displays the song\'s title, artist, album, and detailed information about the person sharing it, including the location.</string>
     <string name="about_part4">"    Music discovery has never been this easy and fun. Get ready to explore the world of music with SongSpot!"</string>
     <string name="about_part5">“Find your songs, connect through music!”</string>
+    <string name="create_a_group">Create a Group</string>
+    <string name="enter_group_name">Enter group name</string>
 </resources>

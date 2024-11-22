@@ -2,7 +2,9 @@ package com.example.composesongspot.ui.theme.ViewModel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import com.example.composesongspot.ui.theme.data.GroupChatData
 import com.example.composesongspot.ui.theme.data.MessageData
+import com.example.composesongspot.ui.theme.data.UserData
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
@@ -42,7 +44,6 @@ class ChatViewModel @Inject constructor() : ViewModel() {
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val list = mutableListOf<MessageData>()
-                    Log.e("TAGG", "${channelID}")
                     snapshot.children.forEach { data ->
                         val message = data.getValue(MessageData::class.java)
                         message?.let {
@@ -63,5 +64,22 @@ class ChatViewModel @Inject constructor() : ViewModel() {
                     Log.e("FirebaseError", error.message)
                 }
             })
+    }
+
+    fun createGroupChat(groupName: String, members: List<UserData>) {
+        val groupId = dbRef.child("groupChats").push().key ?: UUID.randomUUID().toString()
+        val groupChat = GroupChatData(
+            groupId = groupId,
+            groupName = groupName,
+            members = members,
+            messages = MutableStateFlow(emptyList())
+        )
+        dbRef.child("groupChats").child(groupId).setValue(groupChat).addOnSuccessListener {
+
+            Log.d("GroupChat", "Grup başarıyla oluşturuldu: $groupName")
+        }
+            .addOnFailureListener { error ->
+                Log.e("GroupChatError", "Grup oluşturulurken hata oluştu: ${error.message}")
+            }
     }
 }

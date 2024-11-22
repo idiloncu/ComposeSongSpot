@@ -3,7 +3,7 @@ package com.example.composesongspot.ui.theme.ViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.composesongspot.ui.theme.data.ChatInfo
+import com.example.composesongspot.ui.theme.data.UserData
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
@@ -19,7 +19,7 @@ class AuthViewModel @Inject constructor() : ViewModel() {
     private val firebaseDatabase = Firebase.database
     private val auth = FirebaseAuth.getInstance()
     private var mDbRef: DatabaseReference = FirebaseDatabase.getInstance().getReference()
-    private val _userList = MutableStateFlow<List<ChatInfo>>(emptyList())
+    private val _userList = MutableStateFlow<List<UserData>>(emptyList())
     val userList = _userList.asStateFlow()
 
     private val _authState = MutableLiveData<AuthState>()
@@ -33,16 +33,16 @@ class AuthViewModel @Inject constructor() : ViewModel() {
     //getChannels
     fun fetchUsers() {
         firebaseDatabase.getReference("user").get().addOnSuccessListener { snapshot ->
-            val list = mutableListOf<ChatInfo>()
+            val list = mutableListOf<UserData>()
             snapshot.children.forEach { data ->
                 val map = data.value as? Map<*, *> ?: return@forEach
-                val chatInfo = ChatInfo(
+                val userData = UserData(
                     id = map["id"] as? String ?: "",
-                    name = map["name"] as? String ?: "Unknown", // Boş veya eksik `name` durumunda varsayılan değer
+                    name = map["name"] as? String ?: "Unknown",
                     email = map["email"] as? String ?: "",
                     createdAt = map["createdAt"] as? Long ?: System.currentTimeMillis()
                 )
-                list.add(chatInfo)
+                list.add(userData)
             }
             _userList.value = list
         }
@@ -50,7 +50,7 @@ class AuthViewModel @Inject constructor() : ViewModel() {
 
     fun addUserToDatabase(name: String, email: String, uid: String) {
         mDbRef = FirebaseDatabase.getInstance().getReference()
-        mDbRef.child("user").child(uid).setValue(ChatInfo(name, email, uid))
+        mDbRef.child("user").child(uid).setValue(UserData(name, email, uid))
     }
 
 

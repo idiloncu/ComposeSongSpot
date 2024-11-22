@@ -1,7 +1,6 @@
 package com.example.composesongspot.ui.theme.data
 
-//Channel
-data class ChatInfo(
+data class UserData(
     val email: String = "",
     val name: String = "",
     val id: String = "",

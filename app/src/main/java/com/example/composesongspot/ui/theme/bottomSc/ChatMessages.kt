@@ -1,6 +1,5 @@
 package com.example.composesongspot.ui.theme.bottomSc
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -61,7 +60,6 @@ fun ChatScr(
                 messages = messages.value,
                 onSendMessage = { message ->
                     viewModel.sendMessage(receiverId, message)
-                    Log.e("Mesage", "ChatScr: $receiverId")
                 }
             )
         }
@@ -117,7 +115,7 @@ fun ChatMessages(
 @Composable
 fun MessageItem(message: MessageData) {
     val isCurrentUser = message.senderId == Firebase.auth.currentUser?.uid
-    val backgroundColor = if (isCurrentUser) Color.Green else Color.White
+    val backgroundColor = if (isCurrentUser) Color.Green else Color.Black
     val alignment = if (isCurrentUser) Alignment.End else Alignment.Start
     Row(
         verticalAlignment = Alignment.CenterVertically,
