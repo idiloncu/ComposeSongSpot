@@ -44,10 +44,11 @@ sealed class Screen(val title: String, val route: String) {
     sealed class ChatScreen(
         val hTitle: String,
         val hRoute: String,
+
     ):Screen(hTitle,hRoute){
         object ChatPage : ChatScreen(
             "Chat",
-            "chat"
+            "chat/{receiverId}"
         )
     }
 

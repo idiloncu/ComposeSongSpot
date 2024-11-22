@@ -47,23 +47,21 @@
     import androidx.lifecycle.viewmodel.compose.viewModel
     import androidx.navigation.NavController
     import androidx.navigation.NavHostController
-    import androidx.navigation.NavType
     import androidx.navigation.compose.NavHost
     import androidx.navigation.compose.composable
     import androidx.navigation.compose.currentBackStackEntryAsState
     import androidx.navigation.compose.rememberNavController
     import androidx.navigation.navArgument
-    import com.example.composesongspot.ui.theme.bottomSc.FindSong
-    import com.example.composesongspot.ui.theme.ViewModel.MainViewModel
-    import com.example.composesongspot.ui.theme.bottomSc.Message
     import com.example.composesongspot.R
     import com.example.composesongspot.Screen
     import com.example.composesongspot.screensInBottom
     import com.example.composesongspot.screensInDrawer
-    import com.example.composesongspot.ui.theme.bottomSc.ChatMessages
+    import com.example.composesongspot.ui.theme.ViewModel.MainViewModel
     import com.example.composesongspot.ui.theme.bottomSc.ChatScr
     import com.example.composesongspot.ui.theme.bottomSc.Comment
+    import com.example.composesongspot.ui.theme.bottomSc.FindSong
     import com.example.composesongspot.ui.theme.bottomSc.Home
+    import com.example.composesongspot.ui.theme.bottomSc.Message
     import com.example.composesongspot.ui.theme.bottomSheetSc.About
     import com.example.composesongspot.ui.theme.bottomSheetSc.Settings
     import com.example.composesongspot.ui.theme.drawerSc.Account
@@ -269,8 +267,9 @@
                 Comment(navController)
             }
             composable(Screen.ChatScreen.ChatPage.hRoute){
-                val channelId = it.arguments?.getString("channelId") ?: ""
-                ChatScr(navController, channelId, receiverId="" )
+                val receiverId = it.arguments?.getString("receiverId") ?: ""
+                Log.e("Mainview", "${receiverId}")
+                ChatScr(navController, receiverId)
             }
         }
     }

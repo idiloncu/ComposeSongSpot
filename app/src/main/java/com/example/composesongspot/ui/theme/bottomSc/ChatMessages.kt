@@ -1,5 +1,6 @@
 package com.example.composesongspot.ui.theme.bottomSc
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -42,8 +43,7 @@ import com.google.firebase.auth.auth
 @Composable
 fun ChatScr(
     navController: NavController,
-    channelId: String,
-    receiverId:String
+    receiverId: String,
 ) {
 
     Scaffold {
@@ -54,13 +54,14 @@ fun ChatScr(
         ) {
             val viewModel: ChatViewModel = viewModel()
             LaunchedEffect(key1 = true) {
-                viewModel.listenForMessages(channelId)
+                viewModel.listenForMessages(receiverId)
             }
             val messages = viewModel.message.collectAsState()
             ChatMessages(
                 messages = messages.value,
                 onSendMessage = { message ->
-                    viewModel.sendMessage(channelId, message, receiverId)
+                    viewModel.sendMessage(receiverId, message)
+                    Log.e("Mesage", "ChatScr: $receiverId")
                 }
             )
         }

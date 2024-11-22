@@ -1,5 +1,6 @@
 package com.example.composesongspot.ui.theme.bottomSc
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.navArgument
 import com.example.composesongspot.ui.theme.ViewModel.AuthViewModel
 import com.example.composesongspot.Screen
 import com.example.composesongspot.ui.theme.data.ChatInfo
@@ -34,7 +36,7 @@ fun LazyColumnChat(navController: NavController,viewModel: AuthViewModel = viewM
 
     LazyColumn(modifier = Modifier.padding(8.dp)){
         items(userList.value){user->
-            ChatCardItems( user,navController)
+            ChatCardItems(user,navController)
 
         }
     }
@@ -47,7 +49,9 @@ fun ChatCardItems(item: ChatInfo, navController: NavController) {
             .fillMaxWidth()
             .padding(16.dp)
             .clickable {
-                 navController.navigate(Screen.ChatScreen.ChatPage.route)
+                 navController.navigate("chat/${item.id}"){
+
+                 }
             }
     ) {
         Column(

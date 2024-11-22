@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.composesongspot.ui.theme.data.MessageData
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -21,32 +22,38 @@ import javax.inject.Inject
 class ChatViewModel @Inject constructor() : ViewModel() {
     private val _messages = MutableStateFlow<List<MessageData>>(emptyList())
     val message = _messages.asStateFlow()
-    val db = Firebase.database
-    var dbRef : DatabaseReference = FirebaseDatabase.getInstance().getReference()
+    private val db = Firebase.database
+    private var dbRef : DatabaseReference = FirebaseDatabase.getInstance().getReference()
 
-    fun sendMessage(channelID: String, messageText: String,receiverId: String) {
+    fun sendMessage(channelID: String, messageText: String) {
         val message = MessageData(
             db.reference.push().key ?: UUID.randomUUID().toString(),
             Firebase.auth.currentUser?.uid ?: "",
             messageText,
             System.currentTimeMillis(),
             Firebase.auth.currentUser?.displayName ?: "",
-            receiverId = receiverId,
+            receiverId = channelID
         )
-
-        db.reference.child("messages").child(channelID).push().setValue(message)
-
+        db.reference.child("messages").child(channelID.takeLast(5)).push().setValue(message)
     }
 
     fun listenForMessages(channelID: String) {
-        db.getReference("messages").child(channelID).orderByChild("createdAt")
+        dbRef.child("messages").child(channelID.takeLast(5)).orderByChild("createdAt")
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val list = mutableListOf<MessageData>()
+                    Log.e("TAGG", "${channelID}")
                     snapshot.children.forEach { data ->
                         val message = data.getValue(MessageData::class.java)
                         message?.let {
-                            list.add(it)
+                            if (it.senderId == channelID && it.receiverId == FirebaseAuth.getInstance().currentUser?.uid){
+                               list.add(it)
+                            }
+                            else{
+                                if (it.receiverId == channelID && it.senderId == FirebaseAuth.getInstance().currentUser?.uid){
+                                    list.add(it)
+                                }
+                            }
                         }
                     }
                     _messages.value = list

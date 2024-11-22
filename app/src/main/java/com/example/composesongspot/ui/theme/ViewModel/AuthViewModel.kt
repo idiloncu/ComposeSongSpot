@@ -37,7 +37,7 @@ class AuthViewModel @Inject constructor() : ViewModel() {
             snapshot.children.forEach { data ->
                 val map = data.value as? Map<*, *> ?: return@forEach
                 val chatInfo = ChatInfo(
-                    id = map["uid"] as? String ?: "",
+                    id = map["id"] as? String ?: "",
                     name = map["name"] as? String ?: "Unknown", // Boş veya eksik `name` durumunda varsayılan değer
                     email = map["email"] as? String ?: "",
                     createdAt = map["createdAt"] as? Long ?: System.currentTimeMillis()
