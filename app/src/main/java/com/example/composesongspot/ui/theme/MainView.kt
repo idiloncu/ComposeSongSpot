@@ -60,6 +60,7 @@
     import com.example.composesongspot.ui.theme.bottomSc.ChatScr
     import com.example.composesongspot.ui.theme.bottomSc.Comment
     import com.example.composesongspot.ui.theme.bottomSc.FindSong
+    import com.example.composesongspot.ui.theme.bottomSc.GroupChatScr
     import com.example.composesongspot.ui.theme.bottomSc.Home
     import com.example.composesongspot.ui.theme.bottomSc.Message
     import com.example.composesongspot.ui.theme.bottomSheetSc.About
@@ -268,8 +269,13 @@
             }
             composable(Screen.ChatScreen.ChatPage.hRoute){
                 val receiverId = it.arguments?.getString("receiverId") ?: ""
-                Log.e("Mainview", "${receiverId}")
+                Log.e("Mainview", "receiverId =  ${receiverId}")
                 ChatScr(navController, receiverId)
+            }
+            composable(Screen.ChatScreen.GroupPage.hRoute){
+                val groupId = it.arguments?.getString("groupId") ?: ""
+                Log.e("Mainview", "groupId=  ${groupId}")
+                GroupChatScr(navController, groupId)
             }
         }
     }

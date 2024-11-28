@@ -24,6 +24,8 @@ import javax.inject.Inject
 class ChatViewModel @Inject constructor() : ViewModel() {
     private val _messages = MutableStateFlow<List<MessageData>>(emptyList())
     val message = _messages.asStateFlow()
+    private val _groupChats = MutableStateFlow<List<GroupChatData>>(emptyList())
+    val groupChats = _groupChats.asStateFlow()
     private val db = Firebase.database
     private var dbRef : DatabaseReference = FirebaseDatabase.getInstance().getReference()
 
@@ -66,20 +68,39 @@ class ChatViewModel @Inject constructor() : ViewModel() {
             })
     }
 
-    fun createGroupChat(groupName: String, members: List<UserData>) {
+    fun createGroupChat(groupID:String, members: List<UserData>,groupMessage: String,groupName:String) {
         val groupId = dbRef.child("groupChats").push().key ?: UUID.randomUUID().toString()
+        val membersId = members.joinToString(",") { it.id } // Üyelerin UID'lerini birleştir
         val groupChat = GroupChatData(
-            groupId = groupId,
+            //grupId= sender 1 tane
+            groupId = groupID,
             groupName = groupName,
-            members = members,
-            messages = MutableStateFlow(emptyList())
+            membersId = membersId , //->receiver(alıcı) many
+            messages = groupMessage
         )
-        dbRef.child("groupChats").child(groupId).setValue(groupChat).addOnSuccessListener {
+        dbRef.child("profile").child("groupChats").child(groupId).setValue(groupChat)
 
-            Log.d("GroupChat", "Grup başarıyla oluşturuldu: $groupName")
-        }
-            .addOnFailureListener { error ->
-                Log.e("GroupChatError", "Grup oluşturulurken hata oluştu: ${error.message}")
-            }
+    }
+    fun listenGroupChats(groupID: String){
+        dbRef.child("profile").child("groupChats").child(groupID).orderByChild("createdAt")
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val glist = mutableListOf<GroupChatData>()
+                    snapshot.children.forEach { data ->
+                        val message = data.getValue(GroupChatData::class.java)
+                        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+                        message?.let {
+                            if (it.membersId.split(",").contains(currentUserId)) {
+                                glist.add(it)
+                            }
+                        }
+                    }
+                    _groupChats.value = glist
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("FirebaseError", error.message)
+                }
+            })
     }
 }

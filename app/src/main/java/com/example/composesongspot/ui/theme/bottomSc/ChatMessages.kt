@@ -35,8 +35,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.composesongspot.ui.theme.ViewModel.ChatViewModel
+import com.example.composesongspot.ui.theme.data.GroupChatData
 import com.example.composesongspot.ui.theme.data.MessageData
+import com.example.composesongspot.ui.theme.data.UserData
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 
 @Composable
@@ -67,12 +70,49 @@ fun ChatScr(
 }
 
 @Composable
+fun GroupChatScr(
+    navController: NavController,
+    groupID: String
+) {
+    Scaffold {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(it)
+        ) {
+            val groupChatViewModel: ChatViewModel = viewModel()
+            LaunchedEffect(key1 = true) {
+                groupChatViewModel.listenGroupChats(groupID)
+            }
+
+            val groupChats = groupChatViewModel.groupChats.collectAsState()
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            val members = listOfNotNull(currentUser?.uid) // Sadece mevcut kullanıcı
+            val inputGroupName = remember { mutableStateOf("") }
+
+            GroupMessage(
+                groupMessage = groupChats.value,
+                onSendMessage = { message ->
+                    groupChatViewModel.createGroupChat(
+                        groupName = inputGroupName.value,
+                        members = members.map { member ->
+                            UserData(id = member, name = currentUser?.displayName ?: "")
+                        },
+                        groupID = groupID,
+                        groupMessage = message
+                    )
+                }
+            )
+        }
+    }
+}
+
+@Composable
 fun ChatMessages(
     messages: List<MessageData>,
     onSendMessage: (String) -> Unit = {}
 ) {
     val hideKeyboardController = LocalSoftwareKeyboardController.current
-    // val messages = remember { mutableStateListOf<MessageData>() }
     val msg = remember { mutableStateOf("") }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -103,6 +143,47 @@ fun ChatMessages(
             IconButton(onClick = {
                 onSendMessage(msg.value)
                 msg.value = ""
+            }) {
+                Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = "send")
+            }
+        }
+    }
+}
+
+@Composable
+fun GroupMessage(
+    groupMessage: List<GroupChatData>,
+    onSendMessage: (String) -> Unit = {}
+) {
+    val hideKeyboardController = LocalSoftwareKeyboardController.current
+    val gMsg = remember { mutableStateOf("") }
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn {
+            items(groupMessage) { gMessage ->
+                GroupMessageItem(gMessage = gMessage)
+            }
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(8.dp)
+                .background(Color.LightGray), verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            TextField(
+                value = gMsg.value,
+                onValueChange = { gMsg.value = it },
+                modifier = Modifier.weight(1f),
+                placeholder = { Text(text = "Type a message your group") },
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = {
+                    hideKeyboardController?.hide()
+                })
+            )
+            IconButton(onClick = {
+                onSendMessage(gMsg.value)
+                gMsg.value = ""
             }) {
                 Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = "send")
             }
@@ -146,6 +227,47 @@ fun MessageItem(message: MessageData) {
 
         Text(
             text = message.senderId,
+            style = MaterialTheme.typography.body2,
+            color = Color.Gray
+        )
+    }
+}
+
+//Group chat bubble
+@Composable
+fun GroupMessageItem(gMessage: GroupChatData) {
+    val isCurrentUser = gMessage.groupId == Firebase.auth.currentUser?.uid
+    val backgroundColor = if (isCurrentUser) Color.Green else Color.Black
+    val alignment = if (isCurrentUser) Alignment.End else Alignment.Start
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .padding(8.dp)
+                .background(
+                    color = Color.Green.copy(alpha = 0.04f),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .border(
+                    width = 2.dp,
+                    color = Color.Green,
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .padding(12.dp)
+        ) {
+            Text(
+                text = gMessage.messages,
+                style = MaterialTheme.typography.body1,
+                color = Color.Black,
+            )
+        }
+
+        Text(
+            text = gMessage.groupId,
             style = MaterialTheme.typography.body2,
             color = Color.Gray
         )

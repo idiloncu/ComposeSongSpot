@@ -16,9 +16,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -35,37 +37,50 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.composesongspot.R
 import com.example.composesongspot.ui.theme.ViewModel.AuthViewModel
+import com.example.composesongspot.ui.theme.ViewModel.ChatViewModel
 import com.example.composesongspot.ui.theme.data.GroupChatData
 import com.example.composesongspot.ui.theme.data.UserData
+import com.google.firebase.auth.FirebaseAuth
+import java.util.UUID
 
 @Composable
 fun Message(navController: NavController) {
     LazyColumnChat(navController, viewModel())
+    FabButton(groupChatViewModel = ChatViewModel())
+    //TODO : groupChatViewModel duzenlenecek
 }
 
 @Composable
 fun LazyColumnChat(navController: NavController, viewModel: AuthViewModel = viewModel()) {
     val userList = viewModel.userList.collectAsState()
+    val groupChatViewModel: ChatViewModel = viewModel()
+    val groupList = groupChatViewModel.groupChats.collectAsState() // Assuming groupChatList is a Flow or LiveData
 
     LazyColumn(modifier = Modifier.padding(8.dp)) {
         items(userList.value) { user ->
-            ChatCardItems(user, navController)
-
+            ChatCardItems(groupItem =null ,user, navController)
+        }
+        items(groupList.value) { group ->
+            ChatCardItems(groupItem = group, item = null, navController = navController)
         }
     }
-    FabButton()
+    FabButton(groupChatViewModel)
 }
 
 @Composable
-fun ChatCardItems(item: UserData, navController: NavController) {
+fun ChatCardItems(groupItem: GroupChatData?, item: UserData?, navController: NavController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
             .clickable {
-                navController.navigate("chat/${item.id}") {
-
+                if (item != null) {
+                    navController.navigate("chat/${item.id}")
                 }
+                if (groupItem != null) {
+                    navController.navigate("group/${groupItem.groupId}")
+                }
+
             }
     ) {
         Column(
@@ -76,7 +91,7 @@ fun ChatCardItems(item: UserData, navController: NavController) {
         ) {
             Column {
                 Text(
-                    text = item.name,
+                    text = item!!.name,
                     style = TextStyle(
                         fontSize = 21.sp,
                         fontWeight = FontWeight.Bold,
@@ -89,9 +104,12 @@ fun ChatCardItems(item: UserData, navController: NavController) {
 }
 
 @Composable
-fun FabButton() {
+fun FabButton(groupChatViewModel: ChatViewModel) {
     val openDialog = remember { mutableStateOf(false) }
+    val inputGroupName = remember { mutableStateOf("") }
+    val groupList = remember { mutableStateListOf<String>() }
     val context = LocalContext.current.applicationContext
+
     Box(modifier = Modifier.fillMaxSize()) {
         FloatingActionButton(
             modifier = Modifier
@@ -99,20 +117,55 @@ fun FabButton() {
                 .align(Alignment.BottomEnd),
             containerColor = colorResource(id = R.color.purple_500),
             onClick = {
-                Toast.makeText(context, "FAB Clicked", Toast.LENGTH_SHORT).show()
-            }){
-            Icon(imageVector = Icons.Filled.Add, contentDescription =null )
+                openDialog.value = true
+            }) {
+            Icon(imageVector = Icons.Filled.Add, contentDescription = null)
         }
-//        if (openDialog.value){
-//            AlertDialog(onDismissRequest = { openDialog.value=false },
-//                title = { Text(stringResource(R.string.create_a_group)) },
-//                text = {
-//                    Column {
-//                        Text(stringResource(R.string.enter_group_name))
-//                        TextField(value = , onValueChange =)
-//                    }
-//                }
-//        }
+        if (openDialog.value) {
+            AlertDialog(onDismissRequest = { openDialog.value = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        if (inputGroupName.value.isNotBlank()) {
+                            val groupID = UUID.randomUUID().toString() // grup id
+                            val currentUser = FirebaseAuth.getInstance().currentUser
+                            val members = listOfNotNull(currentUser?.uid) // Sadece mevcut kullanıcı
 
+                            groupChatViewModel.createGroupChat(
+                                groupID = groupID,
+                                members = members.map { member ->
+                                    UserData(id = member, name = currentUser?.displayName ?: "")
+                                },
+                                groupMessage = "",
+                                groupName = inputGroupName.value
+                            )
+
+                            groupList.add(inputGroupName.value)
+                            inputGroupName.value = ""
+                            openDialog.value = false
+                        } else {
+                            Toast.makeText(context, "Don't leave it blank!", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                    }) {
+                        Text("OK")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { openDialog.value = false }) {
+                        Text("Cancel")
+                    }
+                },
+                title = { Text(stringResource(R.string.create_a_group)) },
+                text = {
+                    Column {
+                        TextField(
+                            value = inputGroupName.value,
+                            onValueChange = { inputGroupName.value = it },
+                            placeholder = { Text("Metin girin") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                })
+        }
     }
 }

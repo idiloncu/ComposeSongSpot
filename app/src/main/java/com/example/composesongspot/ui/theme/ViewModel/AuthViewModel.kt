@@ -32,7 +32,7 @@ class AuthViewModel @Inject constructor() : ViewModel() {
 
     //getChannels
     fun fetchUsers() {
-        firebaseDatabase.getReference("user").get().addOnSuccessListener { snapshot ->
+        firebaseDatabase.getReference("profile").child("user").get().addOnSuccessListener { snapshot ->
             val list = mutableListOf<UserData>()
             snapshot.children.forEach { data ->
                 val map = data.value as? Map<*, *> ?: return@forEach
@@ -50,7 +50,7 @@ class AuthViewModel @Inject constructor() : ViewModel() {
 
     fun addUserToDatabase(name: String, email: String, uid: String) {
         mDbRef = FirebaseDatabase.getInstance().getReference()
-        mDbRef.child("user").child(uid).setValue(UserData(name, email, uid))
+        mDbRef.child("profile").child("user").child(uid).setValue(UserData(name, email, uid))
     }
 
 
