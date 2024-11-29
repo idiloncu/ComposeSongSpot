@@ -13,27 +13,35 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Checkbox
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.composesongspot.R
+import com.example.composesongspot.ui.theme.ViewModel.AuthViewModel
 import com.example.composesongspot.ui.theme.ViewModel.ChatViewModel
 import com.example.composesongspot.ui.theme.data.GroupChatData
 import com.example.composesongspot.ui.theme.data.MessageData
@@ -74,7 +82,17 @@ fun GroupChatScr(
     navController: NavController,
     groupID: String
 ) {
-    Scaffold {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(text = "Group Chat")
+                },
+                backgroundColor = Color.Gray,
+                contentColor = Color.White
+            )
+        }
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -84,7 +102,7 @@ fun GroupChatScr(
             LaunchedEffect(key1 = true) {
                 groupChatViewModel.listenGroupChats(groupID)
             }
-
+//TODO : mesajlar burada degil GroupMessage sayfasında gorunecek
             val groupChats = groupChatViewModel.groupChats.collectAsState()
             val currentUser = FirebaseAuth.getInstance().currentUser
             val members = listOfNotNull(currentUser?.uid) // Sadece mevcut kullanıcı
@@ -157,11 +175,16 @@ fun GroupMessage(
 ) {
     val hideKeyboardController = LocalSoftwareKeyboardController.current
     val gMsg = remember { mutableStateOf("") }
+    val openDialog = remember { mutableStateOf(false) }
+
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn {
             items(groupMessage) { gMessage ->
                 GroupMessageItem(gMessage = gMessage)
             }
+        }
+        Row {
+
         }
         Row(
             modifier = Modifier
@@ -181,16 +204,94 @@ fun GroupMessage(
                     hideKeyboardController?.hide()
                 })
             )
-            IconButton(onClick = {
-                onSendMessage(gMsg.value)
-                gMsg.value = ""
-            }) {
-                Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = "send")
+            Row {
+                IconButton(onClick = {
+                    onSendMessage(gMsg.value)
+                    gMsg.value = ""
+                }) {
+                    Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = "send")
+                }
+
+                IconButton(onClick = {
+                    openDialog.value = true
+
+                }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.person_add),
+                        contentDescription = "add_people"
+                    )
+                }
+            }
+        }
+    }
+    if (openDialog.value) {
+        AlertDialog(onDismissRequest = { openDialog.value = false },
+            confirmButton = {
+                TextButton(onClick = { openDialog.value = false }) {
+                    Text("Add")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { openDialog.value = false }) {
+                    Text("Cancel")
+                }
+            },
+            title = { Text("User List") },
+            text = {
+                UserList()
+                UserListWithCheckBox()
+            }
+        )
+    }
+}
+
+@Composable
+fun UserList(viewModel: AuthViewModel = viewModel()) {
+    val userList = viewModel.userList.collectAsState()
+    LazyColumn {
+        items(userList.value) { user ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = user.name, style = MaterialTheme.typography.body1)
             }
         }
     }
 }
 
+@Composable
+fun UserListWithCheckBox(viewModel: AuthViewModel = viewModel()) {
+    val userList = viewModel.userList.collectAsState()
+    val selectedUsers = remember { mutableStateMapOf<String, Boolean>() }
+
+    LazyColumn {
+        items(userList.value) { user ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp, horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = user.email,
+                    style = MaterialTheme.typography.body1,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp)
+                )
+                Checkbox(
+                    checked = selectedUsers[user.id] == true,
+                    onCheckedChange = { isChecked ->
+                        selectedUsers[user.id] = isChecked
+                    }
+                )
+            }
+        }
+    }
+}
 
 //Chat bubble
 @Composable

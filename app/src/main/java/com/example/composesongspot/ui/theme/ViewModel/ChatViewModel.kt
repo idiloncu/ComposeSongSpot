@@ -27,7 +27,7 @@ class ChatViewModel @Inject constructor() : ViewModel() {
     private val _groupChats = MutableStateFlow<List<GroupChatData>>(emptyList())
     val groupChats = _groupChats.asStateFlow()
     private val db = Firebase.database
-    private var dbRef : DatabaseReference = FirebaseDatabase.getInstance().getReference()
+    private var dbRef: DatabaseReference = FirebaseDatabase.getInstance().getReference()
 
     fun sendMessage(channelID: String, messageText: String) {
         val message = MessageData(
@@ -49,11 +49,10 @@ class ChatViewModel @Inject constructor() : ViewModel() {
                     snapshot.children.forEach { data ->
                         val message = data.getValue(MessageData::class.java)
                         message?.let {
-                            if (it.senderId == channelID && it.receiverId == FirebaseAuth.getInstance().currentUser?.uid){
-                               list.add(it)
-                            }
-                            else{
-                                if (it.receiverId == channelID && it.senderId == FirebaseAuth.getInstance().currentUser?.uid){
+                            if (it.senderId == channelID && it.receiverId == FirebaseAuth.getInstance().currentUser?.uid) {
+                                list.add(it)
+                            } else {
+                                if (it.receiverId == channelID && it.senderId == FirebaseAuth.getInstance().currentUser?.uid) {
                                     list.add(it)
                                 }
                             }
@@ -68,20 +67,26 @@ class ChatViewModel @Inject constructor() : ViewModel() {
             })
     }
 
-    fun createGroupChat(groupID:String, members: List<UserData>,groupMessage: String,groupName:String) {
+    fun createGroupChat(
+        groupID: String,
+        members: List<UserData>,
+        groupMessage: String,
+        groupName: String
+    ) {
         val groupId = dbRef.child("groupChats").push().key ?: UUID.randomUUID().toString()
         val membersId = members.joinToString(",") { it.id } // Üyelerin UID'lerini birleştir
         val groupChat = GroupChatData(
             //grupId= sender 1 tane
             groupId = groupID,
             groupName = groupName,
-            membersId = membersId , //->receiver(alıcı) many
+            membersId = membersId, //->receiver(alıcı) many
             messages = groupMessage
         )
         dbRef.child("profile").child("groupChats").child(groupId).setValue(groupChat)
 
     }
-    fun listenGroupChats(groupID: String){
+
+    fun listenGroupChats(groupID: String) {
         dbRef.child("profile").child("groupChats").child(groupID).orderByChild("createdAt")
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {

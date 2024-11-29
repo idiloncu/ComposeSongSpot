@@ -2,6 +2,7 @@ package com.example.composesongspot.ui.theme.bottomSc
 
 import android.widget.Toast
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +15,7 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.TextButton
@@ -47,21 +49,20 @@ import java.util.UUID
 fun Message(navController: NavController) {
     LazyColumnChat(navController, viewModel())
     FabButton(groupChatViewModel = ChatViewModel())
-    //TODO : groupChatViewModel duzenlenecek
 }
 
 @Composable
 fun LazyColumnChat(navController: NavController, viewModel: AuthViewModel = viewModel()) {
     val userList = viewModel.userList.collectAsState()
     val groupChatViewModel: ChatViewModel = viewModel()
-    val groupList = groupChatViewModel.groupChats.collectAsState() // Assuming groupChatList is a Flow or LiveData
+    val groupList = viewModel.groupList.collectAsState()
 
     LazyColumn(modifier = Modifier.padding(8.dp)) {
-        items(userList.value) { user ->
-            ChatCardItems(groupItem =null ,user, navController)
-        }
         items(groupList.value) { group ->
             ChatCardItems(groupItem = group, item = null, navController = navController)
+        }
+        items(userList.value) { user ->
+            ChatCardItems(groupItem = null, user, navController)
         }
     }
     FabButton(groupChatViewModel)
@@ -90,14 +91,26 @@ fun ChatCardItems(groupItem: GroupChatData?, item: UserData?, navController: Nav
             horizontalAlignment = Alignment.Start
         ) {
             Column {
-                Text(
-                    text = item!!.name,
-                    style = TextStyle(
-                        fontSize = 21.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.DarkGray
+                if (item != null) {
+                    Text(
+                        text = item.name,
+                        style = TextStyle(
+                            fontSize = 21.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.DarkGray
+                        )
                     )
-                )
+                } else {
+                    Text(
+                        text = groupItem!!.groupName,
+                        style = TextStyle(
+                            fontSize = 21.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.DarkGray
+                        )
+                    )
+                }
+
             }
         }
     }
