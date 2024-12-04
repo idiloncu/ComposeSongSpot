@@ -4,10 +4,11 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.composesongspot.ui.theme.data.GroupChatData
+import com.example.composesongspot.ui.theme.data.Group
 import com.example.composesongspot.ui.theme.data.UserData
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.database
@@ -24,7 +25,7 @@ class AuthViewModel @Inject constructor() : ViewModel() {
     private var mDbRef: DatabaseReference = FirebaseDatabase.getInstance().getReference()
     private val _userList = MutableStateFlow<List<UserData>>(emptyList())
     val userList = _userList.asStateFlow()
-    private val _groupList = MutableStateFlow<List<GroupChatData>>(emptyList())
+    private val _groupList = MutableStateFlow<List<Group>>(emptyList())
     val groupList = _groupList.asStateFlow()
     private var dbRef: DatabaseReference = FirebaseDatabase.getInstance().getReference()
     private val groupId = dbRef.child("groupChats").push().key ?: UUID.randomUUID().toString()
@@ -59,17 +60,15 @@ class AuthViewModel @Inject constructor() : ViewModel() {
     }
 
     private fun fetchGroups() {
-        firebaseDatabase.getReference("profile").child("groupChats").get()
+        firebaseDatabase.getReference("GroupMessaging").child("group").get()
             .addOnSuccessListener { snapshot ->
-                val glist = mutableListOf<GroupChatData>()
+                val glist = mutableListOf<Group>()
                 snapshot.children.forEach { group ->
                     val map = group.value as? Map<*, *> ?: return@forEach
-                    val groupData = GroupChatData(
-                        groupName = map["groupName"] as? String ?: "",
+                    val groupData = Group(
                         groupId = map["groupId"] as? String ?: "",
-                        createdAt = map["createdAt"] as? Long ?: System.currentTimeMillis(),
-                        membersId = map["membersId"] as? String ?: "",
-                        messages = ""
+                        groupName = map["groupName"] as? String ?: "Unknown",
+                        participants = map["participants"] as? List<UserData> ?: emptyList()
                     )
                     glist.add(groupData)
                 }
@@ -82,9 +81,8 @@ class AuthViewModel @Inject constructor() : ViewModel() {
 
     private fun addUserToDatabase(name: String, email: String, uid: String) {
         mDbRef = FirebaseDatabase.getInstance().getReference()
-        mDbRef.child("profile").child("user").child(uid).setValue(UserData(name, email, uid))
-        mDbRef.child("profile").child("groupChats").child(uid)
-            .setValue(GroupChatData("grup name", groupId, 0, membersId, ""))
+        mDbRef.child("profile").child("user").child(uid)
+            .setValue(UserData(email = email, name = name, id = uid))
     }
 
 
@@ -122,6 +120,9 @@ class AuthViewModel @Inject constructor() : ViewModel() {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    auth.currentUser?.updateProfile(
+                        UserProfileChangeRequest.Builder().setDisplayName(name).build()
+                    )
                     _authState.value = AuthState.Authenticated
                     addUserToDatabase(name, email, auth.currentUser?.uid!!)
 

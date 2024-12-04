@@ -51,11 +51,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.example.composesongspot.R
 import com.example.composesongspot.Screen
 import com.example.composesongspot.screensInBottom
 import com.example.composesongspot.screensInDrawer
+import com.example.composesongspot.ui.theme.ViewModel.ChatViewModel
 import com.example.composesongspot.ui.theme.ViewModel.MainViewModel
 import com.example.composesongspot.ui.theme.bottomSc.ChatScr
 import com.example.composesongspot.ui.theme.bottomSc.Comment
@@ -276,6 +276,8 @@ fun Navigation(navController: NavController, viewModel: MainViewModel, pd: Paddi
             val groupId = it.arguments?.getString("groupId") ?: ""
             Log.e("Mainview", "groupId=  ${groupId}")
             GroupChatScr(navController, groupId)
+            ChatViewModel().listenGroupChats(groupId)
+            Log.d("Mainvw", "${groupId}")
         }
     }
 }

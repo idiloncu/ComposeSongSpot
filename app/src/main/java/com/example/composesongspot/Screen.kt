@@ -101,7 +101,7 @@ sealed class Screen(val title: String, val route: String) {
     sealed class Comment(
         val cTitle: String,
         val cRoute: String,
-    ):Screen(cTitle,cRoute){
+    ) : Screen(cTitle, cRoute) {
         object Comment : CommentScreen(
             "Comment",
             "comment"
@@ -138,7 +138,12 @@ fun BottomNavigationBar(
         Screen.BottomScreen::class.sealedSubclasses.forEach { subclass ->
             val screen = subclass.objectInstance ?: return@forEach
             NavigationBarItem(
-                icon = { Icon(painterResource(id = screen.icon), contentDescription = screen.bTitle) },
+                icon = {
+                    Icon(
+                        painterResource(id = screen.icon),
+                        contentDescription = screen.bTitle
+                    )
+                },
                 label = { Text(screen.bTitle) },
                 selected = currentScreen == screen,
                 onClick = { onScreenSelected(screen) }

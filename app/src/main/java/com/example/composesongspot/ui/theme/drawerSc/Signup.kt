@@ -126,7 +126,7 @@ fun Signup(navController: NavController,authViewModel: AuthViewModel) {
 
         Spacer(modifier = Modifier.height(4.dp))
         Button(onClick = {
-            authViewModel.signUp(name ,email, password)
+            authViewModel.signUp(firstName ,email, password)
         },
             colors = ButtonDefaults.buttonColors(Color.DarkGray)) {
             Text(text = "Register", color = Color.White)

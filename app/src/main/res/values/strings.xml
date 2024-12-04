@@ -7,4 +7,7 @@
     <string name="about_part5">“Find your songs, connect through music!”</string>
     <string name="create_a_group">Create a Group</string>
     <string name="enter_group_name">Enter group name</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="metin_girin">Metin girin</string>
 </resources>

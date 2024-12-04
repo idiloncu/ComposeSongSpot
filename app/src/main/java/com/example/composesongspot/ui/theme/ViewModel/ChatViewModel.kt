@@ -2,7 +2,8 @@ package com.example.composesongspot.ui.theme.ViewModel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.example.composesongspot.ui.theme.data.GroupChatData
+import com.example.composesongspot.ui.theme.data.Group
+import com.example.composesongspot.ui.theme.data.GroupMessageData
 import com.example.composesongspot.ui.theme.data.MessageData
 import com.example.composesongspot.ui.theme.data.UserData
 import com.google.firebase.Firebase
@@ -24,7 +25,7 @@ import javax.inject.Inject
 class ChatViewModel @Inject constructor() : ViewModel() {
     private val _messages = MutableStateFlow<List<MessageData>>(emptyList())
     val message = _messages.asStateFlow()
-    private val _groupChats = MutableStateFlow<List<GroupChatData>>(emptyList())
+    private val _groupChats = MutableStateFlow<List<GroupMessageData>>(emptyList())
     val groupChats = _groupChats.asStateFlow()
     private val db = Firebase.database
     private var dbRef: DatabaseReference = FirebaseDatabase.getInstance().getReference()
@@ -39,6 +40,19 @@ class ChatViewModel @Inject constructor() : ViewModel() {
             receiverId = channelID
         )
         db.reference.child("messages").child(channelID.takeLast(5)).push().setValue(message)
+    }
+
+    fun sendGroupMessage(groupID: String, messageText: String, senderId: String) {
+        val id = UUID.randomUUID()
+        val gmessage = GroupMessageData(
+            messageId = UUID.randomUUID().toString(),
+            groupId = id.toString(),
+            senderId = senderId,
+            System.currentTimeMillis(),
+            messageText
+        )
+        db.reference.child("GroupMessaging").child("groupMessage").child(groupID).push()
+            .setValue(gmessage)
     }
 
     fun listenForMessages(channelID: String) {
@@ -67,40 +81,36 @@ class ChatViewModel @Inject constructor() : ViewModel() {
             })
     }
 
-    fun createGroupChat(
-        groupID: String,
+    fun createGroup(
         members: List<UserData>,
-        groupMessage: String,
         groupName: String
     ) {
-        val groupId = dbRef.child("groupChats").push().key ?: UUID.randomUUID().toString()
-        val membersId = members.joinToString(",") { it.id } // Üyelerin UID'lerini birleştir
-        val groupChat = GroupChatData(
-            //grupId= sender 1 tane
-            groupId = groupID,
-            groupName = groupName,
-            membersId = membersId, //->receiver(alıcı) many
-            messages = groupMessage
-        )
-        dbRef.child("profile").child("groupChats").child(groupId).setValue(groupChat)
 
+        val groupId = UUID.randomUUID().toString()
+        val groupChat = Group(
+            groupId = groupId,
+            groupName = groupName,
+            participants = members
+        )
+        dbRef.child("GroupMessaging").child("group").child(groupId).setValue(groupChat)
     }
 
     fun listenGroupChats(groupID: String) {
-        dbRef.child("profile").child("groupChats").child(groupID).orderByChild("createdAt")
+        dbRef.child("GroupMessaging").child("groupMessage").child(groupID).orderByChild("createdAt")
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val glist = mutableListOf<GroupChatData>()
+                    val groupMessageList = mutableListOf<GroupMessageData>()
                     snapshot.children.forEach { data ->
-                        val message = data.getValue(GroupChatData::class.java)
-                        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-                        message?.let {
-                            if (it.membersId.split(",").contains(currentUserId)) {
-                                glist.add(it)
-                            }
-                        }
+                        val map = data.value as? Map<*, *> ?: return@forEach
+                        val groupData = GroupMessageData(
+                            groupId = map["groupId"] as? String ?: "",
+                            messageId = map["messageId"] as? String ?: "",
+                            senderId = map["senderId"] as? String ?: "",
+                            message = map["message"] as? String ?: "",
+                        )
+                        groupMessageList.add(groupData)
                     }
-                    _groupChats.value = glist
+                    _groupChats.value = groupMessageList
                 }
 
                 override fun onCancelled(error: DatabaseError) {

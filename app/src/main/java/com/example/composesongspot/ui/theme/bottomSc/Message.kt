@@ -2,7 +2,6 @@ package com.example.composesongspot.ui.theme.bottomSc
 
 import android.widget.Toast
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,7 +14,6 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.TextButton
@@ -40,7 +38,7 @@ import androidx.navigation.NavController
 import com.example.composesongspot.R
 import com.example.composesongspot.ui.theme.ViewModel.AuthViewModel
 import com.example.composesongspot.ui.theme.ViewModel.ChatViewModel
-import com.example.composesongspot.ui.theme.data.GroupChatData
+import com.example.composesongspot.ui.theme.data.Group
 import com.example.composesongspot.ui.theme.data.UserData
 import com.google.firebase.auth.FirebaseAuth
 import java.util.UUID
@@ -69,7 +67,7 @@ fun LazyColumnChat(navController: NavController, viewModel: AuthViewModel = view
 }
 
 @Composable
-fun ChatCardItems(groupItem: GroupChatData?, item: UserData?, navController: NavController) {
+fun ChatCardItems(groupItem: Group?, item: UserData?, navController: NavController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -81,7 +79,6 @@ fun ChatCardItems(groupItem: GroupChatData?, item: UserData?, navController: Nav
                 if (groupItem != null) {
                     navController.navigate("group/${groupItem.groupId}")
                 }
-
             }
     ) {
         Column(
@@ -143,12 +140,15 @@ fun FabButton(groupChatViewModel: ChatViewModel) {
                             val currentUser = FirebaseAuth.getInstance().currentUser
                             val members = listOfNotNull(currentUser?.uid) // Sadece mevcut kullanıcı
 
-                            groupChatViewModel.createGroupChat(
-                                groupID = groupID,
-                                members = members.map { member ->
-                                    UserData(id = member, name = currentUser?.displayName ?: "")
-                                },
-                                groupMessage = "",
+                            groupChatViewModel.createGroup(
+                                members = listOf(
+                                    UserData(
+                                        currentUser?.email.toString(),
+                                        currentUser?.displayName.toString(),
+                                        currentUser!!.uid,
+                                        System.currentTimeMillis()
+                                    )
+                                ),
                                 groupName = inputGroupName.value
                             )
 
@@ -160,12 +160,12 @@ fun FabButton(groupChatViewModel: ChatViewModel) {
                                 .show()
                         }
                     }) {
-                        Text("OK")
+                        Text(stringResource(R.string.ok))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { openDialog.value = false }) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.cancel))
                     }
                 },
                 title = { Text(stringResource(R.string.create_a_group)) },
@@ -174,7 +174,7 @@ fun FabButton(groupChatViewModel: ChatViewModel) {
                         TextField(
                             value = inputGroupName.value,
                             onValueChange = { inputGroupName.value = it },
-                            placeholder = { Text("Metin girin") },
+                            placeholder = { Text(stringResource(R.string.metin_girin)) },
                             modifier = Modifier.fillMaxWidth()
                         )
                     }

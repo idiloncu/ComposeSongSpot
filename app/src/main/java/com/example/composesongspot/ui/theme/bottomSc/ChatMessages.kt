@@ -43,9 +43,8 @@ import androidx.navigation.NavController
 import com.example.composesongspot.R
 import com.example.composesongspot.ui.theme.ViewModel.AuthViewModel
 import com.example.composesongspot.ui.theme.ViewModel.ChatViewModel
-import com.example.composesongspot.ui.theme.data.GroupChatData
+import com.example.composesongspot.ui.theme.data.GroupMessageData
 import com.example.composesongspot.ui.theme.data.MessageData
-import com.example.composesongspot.ui.theme.data.UserData
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
@@ -86,7 +85,13 @@ fun GroupChatScr(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = "Group Chat")
+                    val viewModel: AuthViewModel = viewModel()
+                    val userList = viewModel.userList.collectAsState()
+                    val groupList = viewModel.groupList.collectAsState()
+                    val userNames = userList.value.joinToString(", ") { it.name }
+                    //val participansName = groupList.value.joinToString(", ") { it.participants }
+                    //TODO grup uyelerının adı duzenlenecek
+                    Text(text = "Group Chat - $userNames")
                 },
                 backgroundColor = Color.Gray,
                 contentColor = Color.White
@@ -102,22 +107,16 @@ fun GroupChatScr(
             LaunchedEffect(key1 = true) {
                 groupChatViewModel.listenGroupChats(groupID)
             }
-//TODO : mesajlar burada degil GroupMessage sayfasında gorunecek
             val groupChats = groupChatViewModel.groupChats.collectAsState()
             val currentUser = FirebaseAuth.getInstance().currentUser
-            val members = listOfNotNull(currentUser?.uid) // Sadece mevcut kullanıcı
-            val inputGroupName = remember { mutableStateOf("") }
 
             GroupMessage(
                 groupMessage = groupChats.value,
                 onSendMessage = { message ->
-                    groupChatViewModel.createGroupChat(
-                        groupName = inputGroupName.value,
-                        members = members.map { member ->
-                            UserData(id = member, name = currentUser?.displayName ?: "")
-                        },
+                    groupChatViewModel.sendGroupMessage(
                         groupID = groupID,
-                        groupMessage = message
+                        messageText = message,
+                      senderId = currentUser?.uid.toString()
                     )
                 }
             )
@@ -170,7 +169,7 @@ fun ChatMessages(
 
 @Composable
 fun GroupMessage(
-    groupMessage: List<GroupChatData>,
+    groupMessage: List<GroupMessageData>,
     onSendMessage: (String) -> Unit = {}
 ) {
     val hideKeyboardController = LocalSoftwareKeyboardController.current
@@ -182,9 +181,6 @@ fun GroupMessage(
             items(groupMessage) { gMessage ->
                 GroupMessageItem(gMessage = gMessage)
             }
-        }
-        Row {
-
         }
         Row(
             modifier = Modifier
@@ -336,8 +332,8 @@ fun MessageItem(message: MessageData) {
 
 //Group chat bubble
 @Composable
-fun GroupMessageItem(gMessage: GroupChatData) {
-    val isCurrentUser = gMessage.groupId == Firebase.auth.currentUser?.uid
+fun GroupMessageItem(gMessage: GroupMessageData) {
+    val isCurrentUser = gMessage.senderId == Firebase.auth.currentUser?.uid
     val backgroundColor = if (isCurrentUser) Color.Green else Color.Black
     val alignment = if (isCurrentUser) Alignment.End else Alignment.Start
     Row(
@@ -361,14 +357,14 @@ fun GroupMessageItem(gMessage: GroupChatData) {
                 .padding(12.dp)
         ) {
             Text(
-                text = gMessage.messages,
+                text = gMessage.message,
                 style = MaterialTheme.typography.body1,
                 color = Color.Black,
             )
         }
 
         Text(
-            text = gMessage.groupId,
+            text = gMessage.senderId,
             style = MaterialTheme.typography.body2,
             color = Color.Gray
         )
