@@ -1,4 +1,4 @@
-package com.example.composesongspot.ui.theme.bottomSc
+package com.example.composesongspot.ui.theme.bottom_screen
 
 import android.widget.Toast
 import androidx.compose.foundation.clickable

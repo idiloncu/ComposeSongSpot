@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.example.composesongspot.ui.theme.ComposeSongSpotTheme
 import com.example.composesongspot.ui.theme.MainView
-import com.example.composesongspot.ui.theme.bottomSc.Home
+import com.example.composesongspot.ui.theme.bottom_screen.Home
 import dagger.hilt.android.AndroidEntryPoint
 
 

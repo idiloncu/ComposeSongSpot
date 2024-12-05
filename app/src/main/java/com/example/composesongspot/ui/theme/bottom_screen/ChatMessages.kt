@@ -1,4 +1,4 @@
-package com.example.composesongspot.ui.theme.bottomSc
+package com.example.composesongspot.ui.theme.bottom_screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -90,7 +90,6 @@ fun GroupChatScr(
                     val groupList = viewModel.groupList.collectAsState()
                     val userNames = userList.value.joinToString(", ") { it.name }
                     //val participansName = groupList.value.joinToString(", ") { it.participants }
-                    //TODO grup uyelerının adı duzenlenecek
                     Text(text = "Group Chat - $userNames")
                 },
                 backgroundColor = Color.Gray,

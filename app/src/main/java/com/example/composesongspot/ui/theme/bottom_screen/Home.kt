@@ -1,4 +1,4 @@
-package com.example.composesongspot.ui.theme.bottomSc
+package com.example.composesongspot.ui.theme.bottom_screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
