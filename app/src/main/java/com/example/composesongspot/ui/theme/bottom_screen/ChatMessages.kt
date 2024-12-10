@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -53,6 +54,9 @@ import com.example.composesongspot.ui.theme.data.MessageData
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun ChatScr(
@@ -86,15 +90,20 @@ fun GroupChatScr(
     navController: NavController,
     groupID: String
 ) {
+    val groupChatViewModel: ChatViewModel = viewModel()
+    val participantNames = groupChatViewModel.participantNames.collectAsState()
+
+    // Katılımcıları dinlemeye başla
+    LaunchedEffect(key1 = true) {
+        groupChatViewModel.listenGroupParticipants(groupID)
+        groupChatViewModel.listenGroupChats(groupID)
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    val viewModel: AuthViewModel = viewModel()
-                    val userList = viewModel.userList.collectAsState()
-                    val userNames = userList.value.joinToString(", ") { it.name }
-                    //val participansName = groupList.value.joinToString(", ") { it.participants }
-                    Text(text = "Group Chat - $userNames")
+                    Text(participantNames.value.joinToString(", "))
                 },
                 backgroundColor = Color.Gray,
                 contentColor = Color.White
@@ -261,11 +270,7 @@ fun GroupMessage(
                             Button(
                                 onClick = {
                                     chatViewModel.addUserToGroup(groupId = groupId.orEmpty(), user)
-                                    Toast.makeText(
-                                        context,
-                                        "${user.name} added to the group",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                    Toast.makeText(context, "${user.name} added to the group", Toast.LENGTH_SHORT).show()
                                 },
                                 shape = CircleShape
                             ) {
@@ -348,6 +353,12 @@ fun MessageItem(message: MessageData) {
             style = MaterialTheme.typography.body2,
             color = Color.Gray
         )
+        Spacer(modifier = Modifier.padding(2.dp))
+        Text(
+            text = formatDate(message.createdAt),
+            style = MaterialTheme.typography.body2,
+            color = Color.Gray
+        )
     }
 }
 
@@ -356,11 +367,14 @@ fun MessageItem(message: MessageData) {
 fun GroupMessageItem(gMessage: GroupMessageData) {
     val isCurrentUser = gMessage.senderId == Firebase.auth.currentUser?.uid
     val backgroundColor = if (isCurrentUser) Color(0xFFFDF7F4) else Color(0xFFFDF7F4)
-    val alignment = if (isCurrentUser) Alignment.End else Alignment.Start
     val borderColor = if (isCurrentUser) Color(0xFF4CAF50) else Color.Black
+    val formattedDate = remember(gMessage.createdAt) {
+        formatDate(gMessage.createdAt)
+    }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = if (isCurrentUser) Arrangement.End else Arrangement.Start,
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
@@ -387,11 +401,17 @@ fun GroupMessageItem(gMessage: GroupMessageData) {
         }
 
         Text(
-            text = gMessage.createdAt.toString(),
+            text = formattedDate,
             style = MaterialTheme.typography.body2,
             color = Color.Gray
         )
     }
+}
+
+fun formatDate(timestamp: Long): String {
+    val date = Date(timestamp)
+    val formatter = SimpleDateFormat("HH:mm", Locale.getDefault())
+    return formatter.format(date)
 }
 
 

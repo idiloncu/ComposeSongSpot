@@ -61,13 +61,11 @@ import com.example.composesongspot.ui.theme.bottom_screen.ChatScr
 import com.example.composesongspot.ui.theme.bottom_screen.Comment
 import com.example.composesongspot.ui.theme.bottom_screen.FindSong
 import com.example.composesongspot.ui.theme.bottom_screen.GroupChatScr
-import com.example.composesongspot.ui.theme.bottom_screen.GroupMessage
 import com.example.composesongspot.ui.theme.bottom_screen.Home
 import com.example.composesongspot.ui.theme.bottom_screen.Message
 import com.example.composesongspot.ui.theme.bottom_screen.UserList
 import com.example.composesongspot.ui.theme.bottom_sheet_screen.About
 import com.example.composesongspot.ui.theme.bottom_sheet_screen.Settings
-import com.example.composesongspot.ui.theme.data.GroupMessageData
 import com.example.composesongspot.ui.theme.drawer_screen.Account
 import com.example.composesongspot.ui.theme.drawer_screen.SignIn
 import com.example.composesongspot.ui.theme.drawer_screen.SignOut
@@ -280,11 +278,6 @@ fun Navigation(navController: NavController, viewModel: MainViewModel, pd: Paddi
             ChatViewModel().listenGroupChats(groupId)
             Log.d("OCTO", "ChatScreen groupId: $groupId")
         }
-//        composable(Screen.ChatScreen.GroupPage.hRoute) {
-//            val groupId = it.arguments?.getString("groupId") ?: ""
-//            GroupMessage(groupMessage = emptyList(), onSendMessage = {}, groupId = groupId)
-//                Log.d("OCTO", "MESSAGE: $groupId ")
-//        }
         composable(Screen.ChatScreen.UserList.hRoute) {
             val groupId = it.arguments?.getString("groupId") ?: ""
             UserList(groupId)

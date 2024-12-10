@@ -2,6 +2,7 @@ package com.example.composesongspot.ui.theme.ViewModel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.composesongspot.ui.theme.data.Group
 import com.example.composesongspot.ui.theme.data.GroupMessageData
 import com.example.composesongspot.ui.theme.data.MessageData
@@ -18,6 +19,7 @@ import com.google.firebase.database.database
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
 
@@ -32,6 +34,8 @@ class ChatViewModel @Inject constructor() : ViewModel() {
     private val firebaseDatabase = Firebase.database
     private val _userList = MutableStateFlow<List<UserData>>(emptyList())
     val userList = _userList.asStateFlow()
+    private val _participantNames = MutableStateFlow<List<String>>(emptyList())
+    val participantNames = _participantNames.asStateFlow()
 
     fun sendMessage(channelID: String, messageText: String) {
         val message = MessageData(
@@ -145,5 +149,18 @@ class ChatViewModel @Inject constructor() : ViewModel() {
         }.addOnFailureListener { error ->
             Log.e("addUserToGroup", "Error adding user: ${error.message}")
         }
+    }
+
+    fun listenGroupParticipants(groupID: String) {
+        dbRef.child("GroupMessaging").child("group").child(groupID).child("participants")
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val participants = snapshot.children.mapNotNull { it.getValue(UserData::class.java)?.name }
+                    _participantNames.value = participants
+                }
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("FirebaseError", error.message)
+                }
+            })
     }
 }
