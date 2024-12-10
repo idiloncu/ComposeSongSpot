@@ -1,16 +1,14 @@
-package com.example.composesongspot.ui.theme.drawerSc
+package com.example.composesongspot.ui.theme.drawer_screen
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
@@ -29,8 +27,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -39,24 +37,41 @@ import com.example.composesongspot.ui.theme.ViewModel.AuthViewModel
 import com.example.composesongspot.R
 
 @Composable
-fun SignIn(navController: NavController, authViewModel: AuthViewModel) {
+fun Signup(navController: NavController, authViewModel: AuthViewModel) {
     var email by remember {
+        mutableStateOf("")
+    }
+    var name by remember {
         mutableStateOf("")
     }
     var password by remember {
         mutableStateOf("")
     }
-    val authState = authViewModel.authState.observeAsState()
-    val context  = LocalContext.current
+    var firstName by remember {
+        mutableStateOf("")
+    }
+    var lastName by remember {
+        mutableStateOf("")
+    }
+    var authState = authViewModel.authState.observeAsState()
+    val context = LocalContext.current
 
     LaunchedEffect(authState.value) {
         when (authState.value) {
-            is AuthState.Authenticated -> navController.navigate("Home")
-            is AuthState.Error -> Toast.makeText(context, (authState.value as AuthState.Error).message, Toast.LENGTH_LONG).show()
+            is AuthState.Authenticated -> {
+                navController.navigate("Sign In")
+            }
+
+            is AuthState.Error -> Toast.makeText(
+                context,
+                (authState.value as AuthState.Error).message,
+                Toast.LENGTH_LONG
+            ).show()
 
             else -> Unit
         }
     }
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -66,20 +81,44 @@ fun SignIn(navController: NavController, authViewModel: AuthViewModel) {
             painter = painterResource(id = R.drawable.userprfl), contentDescription = "login image",
             modifier = Modifier.size(200.dp)
         )
+
+        Text(text = "Hey there,", color = Color.DarkGray)
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = "Welcome Back",
+            text = "Create an Account",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             color = Color.DarkGray
         )
+
         Spacer(modifier = Modifier.height(4.dp))
-        Text(text = "Login to your account", color = Color.DarkGray)
-        Spacer(modifier = Modifier.height(4.dp))
-        OutlinedTextField(value = email, onValueChange = {
-            email = it
+        OutlinedTextField(value = firstName, onValueChange = {
+            firstName = it
         }, label = {
-            Text(text = "Email Address")
+            Text(text = "First Name")
         }, textStyle = TextStyle(color = Color.DarkGray))
+        Spacer(modifier = Modifier.height(4.dp))
+        OutlinedTextField(
+            value = lastName,
+            onValueChange = {
+                lastName = it
+            },
+            label = {
+                Text(text = "Last Name")
+            },
+            textStyle = TextStyle(color = Color.DarkGray)
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        OutlinedTextField(
+            value = email,
+            onValueChange = {
+                email = it
+            },
+            label = {
+                Text(text = "Email Address")
+            },
+            textStyle = TextStyle(color = Color.DarkGray)
+        )
         Spacer(modifier = Modifier.height(4.dp))
         OutlinedTextField(
             value = password,
@@ -89,30 +128,21 @@ fun SignIn(navController: NavController, authViewModel: AuthViewModel) {
             label = {
                 Text(text = "Password")
             },
+            textStyle = TextStyle(color = Color.DarkGray),
             visualTransformation = PasswordVisualTransformation(),
-            textStyle = TextStyle(color = Color.DarkGray)
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Number
+            )
         )
-        Spacer(modifier = Modifier.height(4.dp))
-        Button(onClick = {
-            authViewModel.login(email, password)
-            Log.i("SignIn", "Email: $email-- Password: $password")
-        },
-            colors = ButtonDefaults.buttonColors(Color.DarkGray)) {
-            Text(text = "Log In", color = Color.White)
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-
-        Text(text = "Forget Password", modifier = Modifier.clickable {
-            navController.navigate("Sign Up")
-        }, color = Color.DarkGray, textDecoration = TextDecoration.Underline)
 
         Spacer(modifier = Modifier.height(4.dp))
-
-        Row {
-            Text(text = "Don't have an account?", color = Color.DarkGray)
-            Text(text = "Sign Up", modifier = Modifier.clickable {
-                navController.navigate("Sign Up")
-            }, color = Color.DarkGray, textDecoration = TextDecoration.Underline)
+        Button(
+            onClick = {
+                authViewModel.signUp(firstName, email, password)
+            },
+            colors = ButtonDefaults.buttonColors(Color.DarkGray)
+        ) {
+            Text(text = "Register", color = Color.White)
         }
     }
 }

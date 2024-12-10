@@ -1,4 +1,4 @@
-package com.example.composesongspot.ui.theme.bottomSheetSc
+package com.example.composesongspot.ui.theme.bottom_sheet_screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

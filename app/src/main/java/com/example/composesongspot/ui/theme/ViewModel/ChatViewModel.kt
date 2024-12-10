@@ -29,6 +29,9 @@ class ChatViewModel @Inject constructor() : ViewModel() {
     val groupChats = _groupChats.asStateFlow()
     private val db = Firebase.database
     private var dbRef: DatabaseReference = FirebaseDatabase.getInstance().getReference()
+    private val firebaseDatabase = Firebase.database
+    private val _userList = MutableStateFlow<List<UserData>>(emptyList())
+    val userList = _userList.asStateFlow()
 
     fun sendMessage(channelID: String, messageText: String) {
         val message = MessageData(
@@ -39,7 +42,7 @@ class ChatViewModel @Inject constructor() : ViewModel() {
             Firebase.auth.currentUser?.displayName ?: "",
             receiverId = channelID
         )
-        db.reference.child("messages").child(channelID.takeLast(5)).push().setValue(message)
+        db.reference.child("messages").child(channelID).push().setValue(message)
     }
 
     fun sendGroupMessage(groupID: String, messageText: String, senderId: String) {
@@ -56,23 +59,28 @@ class ChatViewModel @Inject constructor() : ViewModel() {
     }
 
     fun listenForMessages(channelID: String) {
-        dbRef.child("messages").child(channelID.takeLast(5)).orderByChild("createdAt")
+        dbRef.child("messages").child(channelID).orderByChild("createdAt")
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val list = mutableListOf<MessageData>()
                     snapshot.children.forEach { data ->
                         val message = data.getValue(MessageData::class.java)
                         message?.let {
-                            if (it.senderId == channelID && it.receiverId == FirebaseAuth.getInstance().currentUser?.uid) {
+                            if (it.senderId == channelID || it.receiverId == FirebaseAuth.getInstance().currentUser?.uid) {
                                 list.add(it)
                             } else {
-                                if (it.receiverId == channelID && it.senderId == FirebaseAuth.getInstance().currentUser?.uid) {
+                                if (it.receiverId == channelID || it.senderId == FirebaseAuth.getInstance().currentUser?.uid) {
                                     list.add(it)
                                 }
+                                Log.d("mesajj", "senderId: ${it.senderId}")
+                                Log.d("mesajj", "senderName: ${it.senderName}")
+                                Log.d("mesajj", "receiverId: ${it.receiverId}")
+
                             }
                         }
                     }
                     _messages.value = list
+                    Log.d("mesajj", "channelID: $channelID")
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -117,5 +125,19 @@ class ChatViewModel @Inject constructor() : ViewModel() {
                     Log.e("FirebaseError", error.message)
                 }
             })
+    }
+
+    fun addUserToGroup(groupId: String, user: UserData) {
+        val groupRef = firebaseDatabase.getReference("GroupMessaging").child("group").child(groupId)
+        groupRef.child("participants").get().addOnSuccessListener { snapshot ->
+            val currentParticipants =
+                snapshot.children.mapNotNull { it.getValue(UserData::class.java) }.toMutableList()
+            if (currentParticipants.none { it.id == user.id }) {
+                currentParticipants.add(user)
+                groupRef.child("participants").setValue(currentParticipants)
+            }
+        }.addOnFailureListener { error ->
+            Log.e("addUserToGroup", "Error adding user: ${error.message}")
+        }
     }
 }

@@ -12,11 +12,15 @@ import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.database
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.lang.reflect.Type
 import java.util.UUID
 import javax.inject.Inject
+
 
 @HiltViewModel
 class AuthViewModel @Inject constructor() : ViewModel() {
@@ -59,18 +63,27 @@ class AuthViewModel @Inject constructor() : ViewModel() {
             }
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun fetchGroups() {
         firebaseDatabase.getReference("GroupMessaging").child("group").get()
             .addOnSuccessListener { snapshot ->
                 val glist = mutableListOf<Group>()
                 snapshot.children.forEach { group ->
                     val map = group.value as? Map<*, *> ?: return@forEach
+
                     val groupData = Group(
                         groupId = map["groupId"] as? String ?: "",
                         groupName = map["groupName"] as? String ?: "Unknown",
                         participants = map["participants"] as? List<UserData> ?: emptyList()
                     )
-                    glist.add(groupData)
+
+                    if (groupData.participants.toString().convertToListObject<UserData>()
+                            ?.any {
+                                it.id == auth.currentUser?.uid
+                            } == true
+                    ) {
+                        glist.add(groupData)
+                    }
                 }
                 _groupList.value = glist
             }
@@ -137,6 +150,11 @@ class AuthViewModel @Inject constructor() : ViewModel() {
         auth.signOut()
         _authState.value = AuthState.Unauthenticated
     }
+}
+
+inline fun <reified T> String.convertToListObject(): List<T>? {
+    val listType: Type = object : TypeToken<List<T?>?>() {}.type
+    return Gson().fromJson<List<T>>(this, listType)
 }
 
 sealed class AuthState {

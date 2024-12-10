@@ -1,6 +1,5 @@
 package com.example.composesongspot.ui.theme
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -63,12 +62,13 @@ import com.example.composesongspot.ui.theme.bottom_screen.FindSong
 import com.example.composesongspot.ui.theme.bottom_screen.GroupChatScr
 import com.example.composesongspot.ui.theme.bottom_screen.Home
 import com.example.composesongspot.ui.theme.bottom_screen.Message
-import com.example.composesongspot.ui.theme.bottomSheetSc.About
-import com.example.composesongspot.ui.theme.bottomSheetSc.Settings
-import com.example.composesongspot.ui.theme.drawerSc.Account
-import com.example.composesongspot.ui.theme.drawerSc.SignIn
-import com.example.composesongspot.ui.theme.drawerSc.SignOut
-import com.example.composesongspot.ui.theme.drawerSc.Signup
+import com.example.composesongspot.ui.theme.bottom_screen.UserList
+import com.example.composesongspot.ui.theme.bottom_sheet_screen.About
+import com.example.composesongspot.ui.theme.bottom_sheet_screen.Settings
+import com.example.composesongspot.ui.theme.drawer_screen.Account
+import com.example.composesongspot.ui.theme.drawer_screen.SignIn
+import com.example.composesongspot.ui.theme.drawer_screen.SignOut
+import com.example.composesongspot.ui.theme.drawer_screen.Signup
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -269,15 +269,16 @@ fun Navigation(navController: NavController, viewModel: MainViewModel, pd: Paddi
         }
         composable(Screen.ChatScreen.ChatPage.hRoute) {
             val receiverId = it.arguments?.getString("receiverId") ?: ""
-            Log.e("Mainview", "receiverId =  ${receiverId}")
             ChatScr(navController, receiverId)
         }
         composable(Screen.ChatScreen.GroupPage.hRoute) {
             val groupId = it.arguments?.getString("groupId") ?: ""
-            Log.e("Mainview", "groupId=  ${groupId}")
             GroupChatScr(navController, groupId)
             ChatViewModel().listenGroupChats(groupId)
-            Log.d("Mainvw", "${groupId}")
+        }
+        composable(Screen.ChatScreen.UserList.hRoute){
+            val groupId = it.arguments?.getString("groupId") ?: ""
+            UserList(groupId)
         }
     }
 }

@@ -53,6 +53,10 @@ sealed class Screen(val title: String, val route: String) {
             "Group",
             "group/{groupId}"
         )
+        object UserList : ChatScreen(
+            "User List",
+            "userlist/{groupId}"
+        )
     }
 
     sealed class DrawerScreen(

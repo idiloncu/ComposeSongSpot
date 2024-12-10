@@ -73,6 +73,7 @@ dependencies {
     implementation ("com.github.bumptech.glide:okhttp3-integration:4.12.0")
     implementation ("io.coil-kt:coil:2.7.0")
     implementation ("io.coil-kt:coil-svg:2.7.0")
+    implementation ("com.google.code.gson:gson:2.11.0")
 
     //Room
     implementation(libs.androidx.runtime)

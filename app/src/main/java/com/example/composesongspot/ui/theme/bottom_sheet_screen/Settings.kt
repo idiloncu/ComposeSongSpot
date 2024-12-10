@@ -1,4 +1,4 @@
-package com.example.composesongspot.ui.theme.bottomSheetSc
+package com.example.composesongspot.ui.theme.bottom_sheet_screen
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable

@@ -1,24 +1,29 @@
 package com.example.composesongspot.ui.theme.bottom_screen
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Checkbox
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -28,12 +33,12 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
@@ -87,7 +92,6 @@ fun GroupChatScr(
                 title = {
                     val viewModel: AuthViewModel = viewModel()
                     val userList = viewModel.userList.collectAsState()
-                    val groupList = viewModel.groupList.collectAsState()
                     val userNames = userList.value.joinToString(", ") { it.name }
                     //val participansName = groupList.value.joinToString(", ") { it.participants }
                     Text(text = "Group Chat - $userNames")
@@ -115,7 +119,7 @@ fun GroupChatScr(
                     groupChatViewModel.sendGroupMessage(
                         groupID = groupID,
                         messageText = message,
-                      senderId = currentUser?.uid.toString()
+                        senderId = currentUser?.uid.toString()
                     )
                 }
             )
@@ -169,11 +173,16 @@ fun ChatMessages(
 @Composable
 fun GroupMessage(
     groupMessage: List<GroupMessageData>,
-    onSendMessage: (String) -> Unit = {}
+    onSendMessage: (String) -> Unit = {},
+    groupId: String? = null
 ) {
     val hideKeyboardController = LocalSoftwareKeyboardController.current
     val gMsg = remember { mutableStateOf("") }
     val openDialog = remember { mutableStateOf(false) }
+    val viewModel: AuthViewModel = viewModel()
+    val userList = viewModel.userList.collectAsState()
+    val chatViewModel: ChatViewModel = viewModel()
+    val context = LocalContext.current
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn {
@@ -220,7 +229,8 @@ fun GroupMessage(
         }
     }
     if (openDialog.value) {
-        AlertDialog(onDismissRequest = { openDialog.value = false },
+        AlertDialog(
+            onDismissRequest = { openDialog.value = false },
             confirmButton = {
                 TextButton(onClick = { openDialog.value = false }) {
                     Text("Add")
@@ -233,56 +243,54 @@ fun GroupMessage(
             },
             title = { Text("User List") },
             text = {
-                UserList()
-                UserListWithCheckBox()
-            }
-        )
-    }
-}
-
-@Composable
-fun UserList(viewModel: AuthViewModel = viewModel()) {
-    val userList = viewModel.userList.collectAsState()
-    LazyColumn {
-        items(userList.value) { user ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 20.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(text = user.name, style = MaterialTheme.typography.body1)
-            }
-        }
-    }
-}
-
-@Composable
-fun UserListWithCheckBox(viewModel: AuthViewModel = viewModel()) {
-    val userList = viewModel.userList.collectAsState()
-    val selectedUsers = remember { mutableStateMapOf<String, Boolean>() }
-
-    LazyColumn {
-        items(userList.value) { user ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp, horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = user.email,
-                    style = MaterialTheme.typography.body1,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 8.dp)
-                )
-                Checkbox(
-                    checked = selectedUsers[user.id] == true,
-                    onCheckedChange = { isChecked ->
-                        selectedUsers[user.id] = isChecked
+                LazyColumn {
+                   items(userList.value) { user->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = user.name,
+                                modifier = Modifier.weight(1f),
+                                style = MaterialTheme.typography.body1)
+                            Button(
+                                onClick = {
+                                    chatViewModel.addUserToGroup(groupId = groupId?: "", user)
+                                    Toast.makeText(context, "${user.name} added to the group", Toast.LENGTH_SHORT).show()
+                                },
+                                shape = CircleShape
+                            ) {
+                                Text(
+                                    text = "+",
+                                    color = Color.Black
+                                )
+                            }
+                        }
                     }
-                )
+                }
+            })
+    }
+}
+
+@Composable
+fun UserList(groupId: String) {
+    val viewModel: ChatViewModel = viewModel()
+    val userList = viewModel.userList.collectAsState()
+    LazyColumn(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        items(userList.value) { user ->
+            Row(
+                modifier = Modifier
+                    .height(IntrinsicSize.Min)
+                    .fillMaxWidth()
+                    .padding(vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+
             }
         }
     }
@@ -292,10 +300,11 @@ fun UserListWithCheckBox(viewModel: AuthViewModel = viewModel()) {
 @Composable
 fun MessageItem(message: MessageData) {
     val isCurrentUser = message.senderId == Firebase.auth.currentUser?.uid
-    val backgroundColor = if (isCurrentUser) Color.Green else Color.Black
+    val backgroundColor = if (isCurrentUser) Color(0xFFFDF7F4) else Color(0xFFFDF7F4)
     val alignment = if (isCurrentUser) Alignment.End else Alignment.Start
     Row(
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = if (isCurrentUser) Arrangement.End else Arrangement.Start,
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
@@ -304,7 +313,7 @@ fun MessageItem(message: MessageData) {
             modifier = Modifier
                 .padding(8.dp)
                 .background(
-                    color = Color.Green.copy(alpha = 0.04f),
+                    color = backgroundColor,
                     shape = RoundedCornerShape(12.dp)
                 )
                 .border(
@@ -322,7 +331,7 @@ fun MessageItem(message: MessageData) {
         }
 
         Text(
-            text = message.senderId,
+            text = message.senderName,
             style = MaterialTheme.typography.body2,
             color = Color.Gray
         )
@@ -333,8 +342,10 @@ fun MessageItem(message: MessageData) {
 @Composable
 fun GroupMessageItem(gMessage: GroupMessageData) {
     val isCurrentUser = gMessage.senderId == Firebase.auth.currentUser?.uid
-    val backgroundColor = if (isCurrentUser) Color.Green else Color.Black
+    val backgroundColor = if (isCurrentUser) Color(0xFFFDF7F4) else Color(0xFFFDF7F4)
     val alignment = if (isCurrentUser) Alignment.End else Alignment.Start
+    val borderColor = if (isCurrentUser) Color(0xFF4CAF50) else Color.Black
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -345,12 +356,12 @@ fun GroupMessageItem(gMessage: GroupMessageData) {
             modifier = Modifier
                 .padding(8.dp)
                 .background(
-                    color = Color.Green.copy(alpha = 0.04f),
+                    color = backgroundColor,
                     shape = RoundedCornerShape(12.dp)
                 )
                 .border(
                     width = 2.dp,
-                    color = Color.Green,
+                    color = borderColor,
                     shape = RoundedCornerShape(12.dp)
                 )
                 .padding(12.dp)
@@ -363,7 +374,7 @@ fun GroupMessageItem(gMessage: GroupMessageData) {
         }
 
         Text(
-            text = gMessage.senderId,
+            text = gMessage.createdAt.toString(),
             style = MaterialTheme.typography.body2,
             color = Color.Gray
         )
