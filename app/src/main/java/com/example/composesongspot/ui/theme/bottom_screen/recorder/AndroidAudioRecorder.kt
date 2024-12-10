@@ -32,7 +32,5 @@ class AndroidAudioRecorder(private val context: Context) : AudioRecorder {
         recorder?.stop()
         recorder?.reset()
         recorder = null
-
-
     }
 }

@@ -121,7 +121,8 @@ fun GroupChatScr(
                         messageText = message,
                         senderId = currentUser?.uid.toString()
                     )
-                }
+                },
+                groupId = groupID
             )
         }
     }
@@ -244,7 +245,7 @@ fun GroupMessage(
             title = { Text("User List") },
             text = {
                 LazyColumn {
-                   items(userList.value) { user->
+                    items(userList.value) { user ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -252,13 +253,19 @@ fun GroupMessage(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(text = user.name,
+                            Text(
+                                text = user.name,
                                 modifier = Modifier.weight(1f),
-                                style = MaterialTheme.typography.body1)
+                                style = MaterialTheme.typography.body1
+                            )
                             Button(
                                 onClick = {
-                                    chatViewModel.addUserToGroup(groupId = groupId?: "", user)
-                                    Toast.makeText(context, "${user.name} added to the group", Toast.LENGTH_SHORT).show()
+                                    chatViewModel.addUserToGroup(groupId = groupId.orEmpty(), user)
+                                    Toast.makeText(
+                                        context,
+                                        "${user.name} added to the group",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
                                 },
                                 shape = CircleShape
                             ) {
@@ -290,7 +297,13 @@ fun UserList(groupId: String) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-
+                Text(
+                    text = user.email,
+                    style = MaterialTheme.typography.body1,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp)
+                )
             }
         }
     }

@@ -56,6 +56,8 @@ class ChatViewModel @Inject constructor() : ViewModel() {
         )
         db.reference.child("GroupMessaging").child("groupMessage").child(groupID).push()
             .setValue(gmessage)
+        Log.d("GRUP MESAJ", "sendGroupMessage:${gmessage.groupId}")
+        Log.d("GRUP MESAJ", "sendGroupMessage:${groupID}")
     }
 
     fun listenForMessages(channelID: String) {
@@ -104,6 +106,7 @@ class ChatViewModel @Inject constructor() : ViewModel() {
     }
 
     fun listenGroupChats(groupID: String) {
+        println("cCCCCc $groupID")
         dbRef.child("GroupMessaging").child("groupMessage").child(groupID).orderByChild("createdAt")
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
@@ -128,13 +131,16 @@ class ChatViewModel @Inject constructor() : ViewModel() {
     }
 
     fun addUserToGroup(groupId: String, user: UserData) {
-        val groupRef = firebaseDatabase.getReference("GroupMessaging").child("group").child(groupId)
-        groupRef.child("participants").get().addOnSuccessListener { snapshot ->
+        firebaseDatabase.getReference("GroupMessaging").child("group").child(groupId)
+            .child("participants").get().addOnSuccessListener { snapshot ->
             val currentParticipants =
-                snapshot.children.mapNotNull { it.getValue(UserData::class.java) }.toMutableList()
+                snapshot.children.mapNotNull { it.getValue(UserData::class.java) }
+                    .toMutableList()
             if (currentParticipants.none { it.id == user.id }) {
                 currentParticipants.add(user)
-                groupRef.child("participants").setValue(currentParticipants)
+                println("cccc $groupId")
+                firebaseDatabase.getReference("GroupMessaging").child("group").child(groupId)
+                    .child("participants").setValue(currentParticipants)
             }
         }.addOnFailureListener { error ->
             Log.e("addUserToGroup", "Error adding user: ${error.message}")
