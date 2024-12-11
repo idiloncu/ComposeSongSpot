@@ -241,11 +241,7 @@ fun GroupMessage(
     if (openDialog.value) {
         AlertDialog(
             onDismissRequest = { openDialog.value = false },
-            confirmButton = {
-                TextButton(onClick = { openDialog.value = false }) {
-                    Text("Add")
-                }
-            },
+            confirmButton = {},
             dismissButton = {
                 TextButton(onClick = { openDialog.value = false }) {
                     Text("Cancel")
@@ -276,7 +272,7 @@ fun GroupMessage(
                             ) {
                                 Text(
                                     text = "+",
-                                    color = Color.Black
+                                    color = Color.White
                                 )
                             }
                         }
