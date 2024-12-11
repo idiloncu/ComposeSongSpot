@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1039317413808",
+    "project_id": "composesongspot",
+    "storage_bucket": "composesongspot.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1039317413808:android:6c6c7ed1c29e9d07eb3075",
+        "android_client_info": {
+          "package_name": "com.example.composesongspot"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxLKzJMAFQASnhYABu_OeQE1rJll38-lw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
