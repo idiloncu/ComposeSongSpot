@@ -1,6 +1,5 @@
 package com.example.composesongspot.ui.theme
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -276,7 +275,6 @@ fun Navigation(navController: NavController, viewModel: MainViewModel, pd: Paddi
             val groupId = it.arguments?.getString("groupId") ?: ""
             GroupChatScr(navController, groupId)
             ChatViewModel().listenGroupChats(groupId)
-            Log.d("OCTO", "ChatScreen groupId: $groupId")
         }
         composable(Screen.ChatScreen.UserList.hRoute) {
             val groupId = it.arguments?.getString("groupId") ?: ""

@@ -8,6 +8,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 sealed class Screen(val title: String, val route: String) {
 
@@ -15,44 +17,50 @@ sealed class Screen(val title: String, val route: String) {
         val bTitle: String,
         val bRoute: String,
         @DrawableRes val icon: Int
-    ): Screen(bTitle,bRoute){
+    ) : Screen(bTitle, bRoute) {
         object Home : BottomScreen(
             "Home",
             "home",
             R.drawable.baseline_music_video_24
         )
+
         object Library : BottomScreen(
             "Find",
             "find",
             R.drawable.baseline_saved_search_24
         )
+
         object Message : BottomScreen(
             "Message",
             "message",
             R.drawable.baseline_chat_24
         )
     }
+
     sealed class CommentScreen(
         val cTitle: String,
         val cRoute: String,
-    ):Screen(cTitle,cRoute){
+    ) : Screen(cTitle, cRoute) {
         object Comment : CommentScreen(
             "Comment",
             "comment"
         )
     }
+
     sealed class ChatScreen(
         val hTitle: String,
         val hRoute: String,
-    ):Screen(hTitle,hRoute){
+    ) : Screen(hTitle, hRoute) {
         object ChatPage : ChatScreen(
             "Chat",
             "chat/{receiverId}"
         )
+
         object GroupPage : ChatScreen(
             "Group",
             "group/{groupId}"
         )
+
         object UserList : ChatScreen(
             "User List",
             "userlist/{groupId}"
@@ -69,22 +77,26 @@ sealed class Screen(val title: String, val route: String) {
             "account",
             R.drawable.baseline_account_circle_24
         )
+
         object SignIn : DrawerScreen(
             "Sign In",
             "sign in",
             R.drawable.baseline_login
         )
+
         object Signup : DrawerScreen(
             "Sign Up",
             "sign up",
             R.drawable.baseline_person_add_alt_1_24
         )
+
         object SignOut : DrawerScreen(
             "Sign Out",
             "sign out",
             R.drawable.baseline_logout
         )
     }
+
     sealed class BottomSheet(
         fTitle: String,
         fRoute: String,
@@ -95,6 +107,7 @@ sealed class Screen(val title: String, val route: String) {
             "settings",
             R.drawable.baseline_settings_24
         )
+
         object About : DrawerScreen(
             "About",
             "about",
@@ -113,18 +126,40 @@ sealed class Screen(val title: String, val route: String) {
     }
 
 }
-val screensInBottom = listOf(
-    Screen.BottomScreen.Home,
-    Screen.BottomScreen.Library,
-    Screen.BottomScreen.Message
-)
 
-val screensInDrawer = listOf(
-    Screen.DrawerScreen.Account,
-    Screen.DrawerScreen.SignIn,
-    Screen.DrawerScreen.Signup,
-    Screen.DrawerScreen.SignOut
-)
+val screensInBottom: List<Screen.BottomScreen>
+    get() {
+        val currentUser = Firebase.auth.currentUser
+        return if (currentUser != null) {
+            listOf(
+                Screen.BottomScreen.Home,
+                Screen.BottomScreen.Library,
+                Screen.BottomScreen.Message
+            )
+        } else {
+            listOf(
+                Screen.BottomScreen.Home,
+                Screen.BottomScreen.Library
+            )
+        }
+    }
+
+val screensInDrawer: List<Screen.DrawerScreen>
+    get() {
+        val currentUser = Firebase.auth.currentUser
+        return if (currentUser != null) {
+            listOf(
+                Screen.DrawerScreen.Account,
+                Screen.DrawerScreen.SignOut
+            )
+        } else {
+            listOf(
+                Screen.DrawerScreen.Account,
+                Screen.DrawerScreen.SignIn,
+                Screen.DrawerScreen.Signup
+            )
+        }
+    }
 
 val screensInComment = listOf(
     Screen.CommentScreen.Comment

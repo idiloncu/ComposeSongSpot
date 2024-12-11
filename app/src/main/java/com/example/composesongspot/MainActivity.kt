@@ -13,10 +13,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.composesongspot.ui.theme.ComposeSongSpotTheme
 import com.example.composesongspot.ui.theme.MainView
 import com.example.composesongspot.ui.theme.bottom_screen.Home
+import com.example.composesongspot.ui.theme.drawer_screen.Signup
 import dagger.hilt.android.AndroidEntryPoint
 
 

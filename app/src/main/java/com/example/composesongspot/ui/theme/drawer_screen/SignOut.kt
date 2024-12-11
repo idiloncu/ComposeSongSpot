@@ -14,6 +14,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.composesongspot.ui.theme.ViewModel.AuthState
 import com.example.composesongspot.ui.theme.ViewModel.AuthViewModel
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 @Composable
 fun SignOut(navController: NavController, authViewModel: AuthViewModel) {
