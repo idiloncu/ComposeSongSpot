@@ -27,7 +27,7 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        hideSystemUI()
+//     hideSystemUI()
         enableEdgeToEdge()
         setContent {
             Home(navController=rememberNavController())
@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
 
                 window.statusBarColor = android.graphics.Color.TRANSPARENT
                 window.navigationBarDividerColor = android.graphics.Color.TRANSPARENT
-                window.navigationBarColor = android.graphics.Color.BLACK
+                window.navigationBarColor = android.graphics.Color.TRANSPARENT
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

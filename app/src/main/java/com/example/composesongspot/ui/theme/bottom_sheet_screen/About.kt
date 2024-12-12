@@ -47,7 +47,10 @@ fun About(navController: NavController) {
         Text(
             text = stringResource(R.string.about_part2) +
                     stringResource(R.string.about_part3),
-            style = MaterialTheme.typography.body1,
+            style = MaterialTheme.typography.subtitle1.copy(
+                fontStyle = FontStyle.Normal,
+                color = Color.DarkGray
+            ),
             lineHeight = 24.sp,
             modifier = Modifier.padding(bottom = 16.dp)
         )
