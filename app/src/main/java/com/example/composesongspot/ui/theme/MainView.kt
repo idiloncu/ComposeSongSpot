@@ -107,7 +107,7 @@ fun MainView() {
         if (currentScreen is Screen.DrawerScreen || currentScreen == Screen.BottomScreen.Home) {
             BottomNavigation(Modifier
                 .padding(bottom = 40.dp)
-                .offset(y = (-25).dp)
+                .offset(y = (-8).dp)
             ) {
                 screensInBottom.forEach { item ->
                     val isSelected = currentRoute == item.bRoute

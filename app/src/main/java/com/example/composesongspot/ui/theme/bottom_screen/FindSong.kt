@@ -64,7 +64,7 @@ fun FindSong() {
                 if (state.isSpeaking) {
                     voiceToTextParser.stopListening()
                 } else {
-                    voiceToTextParser.startListening("en-US")
+                    voiceToTextParser.startListening("")
                 }
             }) {
                 AnimatedContent(targetState = state.isSpeaking) {
