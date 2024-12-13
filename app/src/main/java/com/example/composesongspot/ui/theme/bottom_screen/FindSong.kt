@@ -1,39 +1,41 @@
 package com.example.composesongspot.ui.theme.bottom_screen
 
 import android.app.Activity
-import android.app.Application
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
-import com.example.composesongspot.ui.theme.bottom_screen.player.AndroidAudioPlayer
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.composesongspot.BuildConfig.API_TOKEN
+import com.example.composesongspot.ui.theme.ViewModel.SongViewModel
 import com.example.composesongspot.ui.theme.bottom_screen.recorder.AndroidAudioRecorder
+import com.example.composesongspot.ui.theme.network.Result
 import java.io.File
 
 @Composable
-fun FindSong() {
+fun FindSong(viewModel: SongViewModel = viewModel()) {
     val context = LocalContext.current
     val activity = context as Activity
     val recorder = remember { AndroidAudioRecorder(context) }
-    val player = remember { AndroidAudioPlayer(context) }
     var audioFile: File? = null
     var isRecording by rememberSaveable { mutableStateOf(false) }
-    val application = context.applicationContext as Application
-    val voiceToTextParser by lazy { VoiceToTextParser(application) }
+    var songInfo by remember { mutableStateOf<String?>(null) }
 
     // Request audio permissions
     LaunchedEffect(Unit) {
@@ -56,69 +58,70 @@ fun FindSong() {
         recordAudioLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
     }
 
-    val state by voiceToTextParser.state.collectAsState()
-
-    Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(onClick = {
-                if (state.isSpeaking) {
-                    voiceToTextParser.stopListening()
-                } else {
-                    voiceToTextParser.startListening("")
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Button(onClick = {
+            if (canRecord) {
+                File(context.cacheDir, "audio.mp3").also {
+                    recorder.start(it)
+                    audioFile = it
+                    isRecording = true
                 }
-            }) {
-                AnimatedContent(targetState = state.isSpeaking) {
-                    if (it) {
-                        Text(text = "Speaking")
-                    } else {
-                        Text(text = state.spokenTest.ifEmpty { "Click on mic to start recording" })
-                    }
+            } else {
+                Toast.makeText(context, "Permission Denied", Toast.LENGTH_LONG).show()
+            }
+
+        }) {
+            Text(text = if (isRecording) "RECORDING" else "START")
+        }
+        Button(onClick = {
+            if (isRecording) {
+                recorder.stop()
+                isRecording = false
+                audioFile?.let { file ->
+                    viewModel.uploadMp3(file,
+                        onSuccess = { downloadUrl ->
+                            // Burada searchSong fonksiyonunu çağırın
+                            viewModel.searchSong(API_TOKEN, url = downloadUrl) { result ->
+                                when (result) {
+                                    is Result.Loading -> songInfo = "Şarkı bilgileri yükleniyor..."
+                                    is Result.Success -> {
+                                        val songTitle = result.data.information.title
+                                        val artistName = result.data.information.artist
+                                        songInfo = "Şarkı: $songTitle\nSanatçı: $artistName"
+                                        Log.d("KONTROLL", "downloadUrl: $downloadUrl")
+                                        Log.d("KONTROLL", "songTitle: $songTitle")
+                                        Log.d("KONTROLL", "artistName: $artistName")
+                                    }
+
+                                    is Result.Error -> songInfo = "Hata: ${result.message}"
+                                }
+                            }
+                        },
+                        onFailure = { errorMessage ->
+                            songInfo = "Yükleme hatası: $errorMessage"
+                        }
+                    )
                 }
             }
+        }) {
+            Text(text = "STOP")
         }
-    )
-    { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally)
-        {}
-//        ) {
-//            Button(onClick = {
-//                File(context.cacheDir, "audio.mp3").also {
-//                    recorder.start(it)
-//                    audioFile = it
-//                    isRecording = true
-//                }
-//            }) {
-//                Text(text = "START")
-//            }
-//
-//            Button(onClick = {
-//                recorder.stop()
-//                isRecording = false
-//            }) {
-//                Text(text = "STOP")
-//            }
-//
-//            Text(
-//                text = if (isRecording) "Recording..." else "Not Recording!",
-//                color = if (isRecording) Color.Green else Color.Red
-//            )
-//
-//            Button(onClick = {
-//                player.playFile(audioFile ?: return@Button)
-//            }) {
-//                Text(text = "PLAY")
-//            }
-//
-//            Button(onClick = {
-//                player.stop()
-//            }) {
-//                Text(text = "STOP PLAYING")
-//            }
-//        }
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.Start
+    ) {
+        songInfo?.let { info ->
+            Text(text = info)
+        }
+        songInfo?.let { artist ->
+            Text(text = "Singer: $artist")
+        }
     }
 }

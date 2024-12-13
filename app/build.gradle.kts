@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -23,6 +25,11 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        val properties = Properties().apply {
+            load(rootProject.file("local.properties").inputStream())
+        }
+
+        buildConfigField("String", "API_TOKEN", properties.getProperty("AuddToken"))
     }
 
     buildTypes {
@@ -60,6 +67,8 @@ dependencies {
     implementation(libs.firebase.database)
     implementation(libs.firebase.crashlytics.buildtools)
     implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.storage.ktx)
+
     val nav_version = "2.7.5"
     val compose_version = "1.6.0-alpha08"
     implementation("androidx.navigation:navigation-compose:$nav_version")
