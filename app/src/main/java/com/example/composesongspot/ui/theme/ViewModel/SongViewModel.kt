@@ -1,16 +1,18 @@
 package com.example.composesongspot.ui.theme.ViewModel
 
 import android.util.Log
+import androidx.compose.runtime.Composable
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.composesongspot.BuildConfig.API_TOKEN
 import com.example.composesongspot.ui.theme.network.Result
 import com.example.composesongspot.ui.theme.network.RetrofitInstance
 import com.example.composesongspot.ui.theme.network.SongResponse
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
 import retrofit2.Call
@@ -18,8 +20,10 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
 import java.util.UUID
+import javax.inject.Inject
 
-class SongViewModel : ViewModel() {
+@HiltViewModel
+class SongViewModel @Inject constructor() : ViewModel() {
 
     private val _searchSongResponse = MutableStateFlow<Result<SongResponse>?>(null)
 
@@ -27,14 +31,30 @@ class SongViewModel : ViewModel() {
         viewModelScope.launch {
             callback(Result.Loading)
             try {
-                val response = RetrofitInstance.api.searchSong(apiToken, url).execute()
-                if (response.isSuccessful) {
-                    response.body()?.let {
-                        callback(Result.Success(it))
-                    } ?: callback(Result.Error("Empty Response Received"))
-                } else {
-                    callback(Result.Error("Callback Error: ${response.message()}"))
-                }
+                val response = RetrofitInstance.api.searchSong(apiToken, url).enqueue(object :
+                    Callback<SongResponse> {
+                    override fun onResponse(
+                        call: Call<SongResponse>,
+                        response: Response<SongResponse>
+                    ) {
+                        response.body()?.let {
+                            callback(Result.Success(it))
+                        } ?: kotlin.run {
+                            callback(Result.Error("Music not found"))
+
+                        }
+                        Log.d("eT", "onResponse: $response")
+                        println(response.message())
+                    }
+
+                    override fun onFailure(call: Call<SongResponse>, t: Throwable) {
+                        println("FAIL ${t.message}")
+                    }
+                })
+                Log.d("MUZIK", "apiToken: $apiToken")
+                Log.d("MUZIK", "url: $url")
+                Log.d("MUZIK", "response: $response")
+
             } catch (e: Exception) {
                 callback(Result.Error(e.message ?: "Unrecognized Error!"))
             }
@@ -45,11 +65,9 @@ class SongViewModel : ViewModel() {
     fun uploadMp3(file: File, onSuccess: (String) -> Unit, onFailure: (String) -> Unit) {
         val uuid = UUID.randomUUID()
         val mp3Name = "$uuid.mp3"
-
         val storage = Firebase.storage
         val reference = storage.reference
         val audioReference = reference.child("audios").child(mp3Name)
-
         audioReference.putFile(file.toUri()).addOnSuccessListener { taskSnapshot ->
 
             val audioReference = storage.reference.child("audios").child(mp3Name)
@@ -61,6 +79,7 @@ class SongViewModel : ViewModel() {
 
                 val postMap = hashMapOf<String, Any>()
                 postMap.put("downloadUrl", downloadUrl)
+                Log.d("AUDIO_URL", "downloadUrl: $downloadUrl")
             }
         }
     }
@@ -71,7 +90,8 @@ class SongViewModel : ViewModel() {
         val apiInterface = RetrofitInstance.api
         val requestBody = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
-            .addFormDataPart("downloadUrl", downloadUrl)
+            .addFormDataPart("url", downloadUrl)
+            .addFormDataPart("api_token", API_TOKEN)
             .build()
 
         apiInterface.somePostMethod(requestBody).enqueue(
@@ -80,9 +100,13 @@ class SongViewModel : ViewModel() {
                     call: Call<SongResponse>,
                     response: Response<SongResponse>
                 ) {
+                    Log.d("Raw Response", "onResponse: ${response.body()}")
+
                     if (response.isSuccessful) {
+                        Log.d("ResponseData", "Received: ${response.body()}")
                         _searchSongResponse.value = Result.Success(response.body()!!)
                     } else {
+                        Log.e("ResponseError", "Error: ${response.message()}")
                         _searchSongResponse.value =
                             Result.Error("Server Side Error: ${response.message()}")
                     }
@@ -95,11 +119,12 @@ class SongViewModel : ViewModel() {
     }
 
     fun uploadMp3AndPostToServer(file: File) {
-        uploadMp3( file,
-            onSuccess = { downloadUrl:String ->
+        uploadMp3(file,
+            onSuccess = { downloadUrl: String ->
                 postAudioToServer(downloadUrl)
+                Log.d("SONGWW", "uploadMp3AndPostToServer:$downloadUrl ")
             },
-            onFailure = { errorMessage:String ->
+            onFailure = { errorMessage: String ->
                 _searchSongResponse.value = Result.Error("File Upload Error: $errorMessage")
             })
     }
