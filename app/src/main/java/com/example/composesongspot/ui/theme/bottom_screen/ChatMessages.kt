@@ -68,7 +68,7 @@ fun ChatScr(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
+                .padding(bottom = 2.dp)
         ) {
             val viewModel: ChatViewModel = viewModel()
             LaunchedEffect(key1 = true) {
@@ -113,7 +113,7 @@ fun GroupChatScr(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
+                .padding(bottom = 2.dp, top = it.calculateTopPadding())
         ) {
             val groupChatViewModel: ChatViewModel = viewModel()
             LaunchedEffect(key1 = true) {
@@ -156,7 +156,7 @@ fun ChatMessages(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
-                .padding(8.dp)
+                .padding(bottom = 6.dp)
                 .background(Color.LightGray), verticalAlignment = Alignment.CenterVertically
         ) {
 
@@ -204,7 +204,7 @@ fun GroupMessage(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
-                .padding(8.dp)
+                .padding(bottom = 6.dp)
                 .background(Color.LightGray), verticalAlignment = Alignment.CenterVertically
         ) {
 
@@ -373,7 +373,7 @@ fun GroupMessageItem(gMessage: GroupMessageData) {
         horizontalArrangement = if (isCurrentUser) Arrangement.End else Arrangement.Start,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(3.dp)
     ) {
         Box(
             modifier = Modifier

@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -82,10 +83,10 @@ fun Signup(navController: NavController, authViewModel: AuthViewModel) {
             modifier = Modifier.size(200.dp)
         )
 
-        Text(text = "Hey there,", color = Color.DarkGray)
+        Text(text = stringResource(R.string.hey_there), color = Color.DarkGray)
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = "Create an Account",
+            text = stringResource(R.string.create_an_account),
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             color = Color.DarkGray
@@ -95,7 +96,7 @@ fun Signup(navController: NavController, authViewModel: AuthViewModel) {
         OutlinedTextField(value = firstName, onValueChange = {
             firstName = it
         }, label = {
-            Text(text = "First Name")
+            Text(text = stringResource(R.string.first_name))
         }, textStyle = TextStyle(color = Color.DarkGray))
         Spacer(modifier = Modifier.height(4.dp))
         OutlinedTextField(
@@ -104,7 +105,7 @@ fun Signup(navController: NavController, authViewModel: AuthViewModel) {
                 lastName = it
             },
             label = {
-                Text(text = "Last Name")
+                Text(text = stringResource(R.string.last_name))
             },
             textStyle = TextStyle(color = Color.DarkGray)
         )
@@ -115,7 +116,7 @@ fun Signup(navController: NavController, authViewModel: AuthViewModel) {
                 email = it
             },
             label = {
-                Text(text = "Email Address")
+                Text(text = stringResource(R.string.email_address_sup))
             },
             textStyle = TextStyle(color = Color.DarkGray)
         )
@@ -126,7 +127,7 @@ fun Signup(navController: NavController, authViewModel: AuthViewModel) {
                 password = it
             },
             label = {
-                Text(text = "Password")
+                Text(text = stringResource(R.string.password_sup))
             },
             textStyle = TextStyle(color = Color.DarkGray),
             visualTransformation = PasswordVisualTransformation(),
@@ -142,7 +143,7 @@ fun Signup(navController: NavController, authViewModel: AuthViewModel) {
             },
             colors = ButtonDefaults.buttonColors(Color.DarkGray)
         ) {
-            Text(text = "Register", color = Color.White)
+            Text(text = stringResource(R.string.register), color = Color.White)
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.example.composesongspot.ui.theme.drawer_screen
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -11,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -29,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -37,9 +36,9 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.composesongspot.R
 import com.example.composesongspot.ui.theme.ViewModel.AuthState
 import com.example.composesongspot.ui.theme.ViewModel.AuthViewModel
-import com.example.composesongspot.R
 
 @Composable
 fun SignIn(navController: NavController, authViewModel: AuthViewModel) {
@@ -70,18 +69,18 @@ fun SignIn(navController: NavController, authViewModel: AuthViewModel) {
             modifier = Modifier.size(200.dp)
         )
         Text(
-            text = "Welcome Back",
+            text = stringResource(R.string.welcome_back),
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             color = Color.DarkGray
         )
         Spacer(modifier = Modifier.height(4.dp))
-        Text(text = "Login to your account", color = Color.DarkGray)
+        Text(text = stringResource(R.string.login_to_your_account), color = Color.DarkGray)
         Spacer(modifier = Modifier.height(4.dp))
         OutlinedTextField(value = email, onValueChange = {
             email = it
         }, label = {
-            Text(text = "Email Address")
+            Text(text = stringResource(R.string.email_address))
         }, textStyle = TextStyle(color = Color.DarkGray))
         Spacer(modifier = Modifier.height(4.dp))
         OutlinedTextField(
@@ -90,7 +89,7 @@ fun SignIn(navController: NavController, authViewModel: AuthViewModel) {
                 password = it
             },
             label = {
-                Text(text = "Password")
+                Text(text = stringResource(R.string.password))
             },
             visualTransformation = PasswordVisualTransformation(),
             textStyle = TextStyle(color = Color.DarkGray),
@@ -101,22 +100,21 @@ fun SignIn(navController: NavController, authViewModel: AuthViewModel) {
         Spacer(modifier = Modifier.height(4.dp))
         Button(onClick = {
             authViewModel.login(email, password)
-            Log.i("SignIn", "Email: $email-- Password: $password")
         },
             colors = ButtonDefaults.buttonColors(Color.DarkGray)) {
-            Text(text = "Log In", color = Color.White)
+            Text(text = stringResource(R.string.log_in), color = Color.White)
         }
         Spacer(modifier = Modifier.height(4.dp))
 
-        Text(text = "Forget Password", modifier = Modifier.clickable {
+        Text(text = stringResource(R.string.forget_password), modifier = Modifier.clickable {
             navController.navigate("Sign Up")
         }, color = Color.DarkGray, textDecoration = TextDecoration.Underline)
 
         Spacer(modifier = Modifier.height(4.dp))
 
         Row {
-            Text(text = "Don't have an account?", color = Color.DarkGray)
-            Text(text = "Sign Up", modifier = Modifier.clickable {
+            Text(text = stringResource(R.string.dont_have_an_account), color = Color.DarkGray)
+            Text(text = stringResource(R.string.sign_up), modifier = Modifier.clickable {
                 navController.navigate("Sign Up")
             }, color = Color.DarkGray, textDecoration = TextDecoration.Underline)
         }

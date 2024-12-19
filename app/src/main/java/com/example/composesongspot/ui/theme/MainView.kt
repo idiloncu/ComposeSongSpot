@@ -41,6 +41,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -102,9 +103,10 @@ fun MainView() {
     }
     val bottomBar: @Composable () -> Unit = {
         if (currentScreen is Screen.DrawerScreen || currentScreen == Screen.BottomScreen.Home) {
-            BottomNavigation(Modifier
-                .padding(bottom = 40.dp)
-                .offset(y = (-8).dp)
+            BottomNavigation(
+                Modifier
+                    .padding(bottom = 40.dp)
+                    .offset(y = (-8).dp)
             ) {
                 screensInBottom.forEach { item ->
                     val isSelected = currentRoute == item.bRoute
@@ -309,7 +311,7 @@ fun MoreButtonSheet(modifier: Modifier, navController: NavController) {
                     contentDescription = "Settings"
                 )
                 Text(
-                    text = "Settings",
+                    text = stringResource(R.string.settings),
                     fontSize = 20.sp,
                     color = Color.DarkGray
                 )
@@ -326,7 +328,7 @@ fun MoreButtonSheet(modifier: Modifier, navController: NavController) {
                     contentDescription = "About"
                 )
                 Text(
-                    text = "About",
+                    text = stringResource(R.string.about),
                     fontSize = 20.sp,
                     color = Color.DarkGray
                 )

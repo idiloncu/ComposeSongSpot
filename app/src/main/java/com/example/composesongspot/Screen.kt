@@ -8,6 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
@@ -171,8 +172,8 @@ fun BottomNavigationBar(
     onScreenSelected: (Screen.BottomScreen) -> Unit
 ) {
     NavigationBar(
-        containerColor = Color.Black,  // Arka plan rengini ayarlayın
-        contentColor = Color.White    // İçerik rengini ayarlayın
+        containerColor = Color.Black,
+        contentColor = Color.White
     ) {
         Screen.BottomScreen::class.sealedSubclasses.forEach { subclass ->
             val screen = subclass.objectInstance ?: return@forEach

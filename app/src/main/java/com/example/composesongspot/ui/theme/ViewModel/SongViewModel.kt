@@ -50,7 +50,6 @@ class SongViewModel @Inject constructor() : ViewModel() {
                             } ?: kotlin.run {
                                 callback(Result.Error("Music not found"))
                             }
-                            Log.d("eT", "onResponse: $response")
                             println(response.message())
                         }
 
@@ -78,11 +77,9 @@ class SongViewModel @Inject constructor() : ViewModel() {
                 val downloadUrl = uri.toString()
                 onSuccess(downloadUrl)
                 println(downloadUrl)
-                Log.d("AUDIO_URL", "uploadMp3: $downloadUrl")
 
                 val postMap = hashMapOf<String, Any>()
                 postMap.put("downloadUrl", downloadUrl)
-                Log.d("AUDIO_URL", "downloadUrl: $downloadUrl")
             }
         }
     }
@@ -100,11 +97,9 @@ class SongViewModel @Inject constructor() : ViewModel() {
                 val pictureUrl = uri.toString()
                 onSuccess(pictureUrl)
                 println(pictureUrl)
-                Log.d("PICTURE_URL", "uploadMp3: $pictureUrl")
 
                 val postMap = hashMapOf<String, Any>()
                 postMap.put("downloadUrl", pictureUrl)
-                Log.d("PICTURE_URL", "downloadUrl: $pictureUrl")
             }
         }
     }

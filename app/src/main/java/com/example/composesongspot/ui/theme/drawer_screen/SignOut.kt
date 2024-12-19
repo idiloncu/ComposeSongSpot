@@ -10,8 +10,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.composesongspot.R
 import com.example.composesongspot.ui.theme.ViewModel.AuthState
 import com.example.composesongspot.ui.theme.ViewModel.AuthViewModel
 import com.google.firebase.auth.ktx.auth
@@ -32,12 +34,12 @@ fun SignOut(navController: NavController, authViewModel: AuthViewModel) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "If you want to sign out, please click the button below", fontSize = 15.sp,
+        Text(text = stringResource(R.string.want_to_sign_out), fontSize = 15.sp,
             modifier = Modifier.align(Alignment.CenterHorizontally))
         Button(onClick = {
             authViewModel.signOut()
         }) {
-            Text(text = "Sign Out")
+            Text(text = stringResource(R.string.sign_out))
 
         }
     }

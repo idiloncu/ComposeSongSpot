@@ -156,7 +156,8 @@ fun FabButton(groupChatViewModel: ChatViewModel) {
                             inputGroupName.value = ""
                             openDialog.value = false
                         } else {
-                            Toast.makeText(context, "Don't leave it blank!", Toast.LENGTH_SHORT)
+                            Toast.makeText(context,
+                                context.getString(R.string.dont_leave_it_blank), Toast.LENGTH_SHORT)
                                 .show()
                         }
                     }) {
@@ -174,7 +175,7 @@ fun FabButton(groupChatViewModel: ChatViewModel) {
                         TextField(
                             value = inputGroupName.value,
                             onValueChange = { inputGroupName.value = it },
-                            placeholder = { Text(stringResource(R.string.metin_girin)) },
+                            placeholder = { Text(stringResource(R.string.group_name)) },
                             modifier = Modifier.fillMaxWidth()
                         )
                     }

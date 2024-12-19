@@ -20,7 +20,6 @@ import com.example.composesongspot.ui.theme.bottom_screen.Home
 import com.google.firebase.ktx.BuildConfig
 import dagger.hilt.android.AndroidEntryPoint
 
-
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.P)

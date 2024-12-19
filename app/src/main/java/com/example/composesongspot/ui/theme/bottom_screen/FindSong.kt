@@ -1,20 +1,20 @@
 package com.example.composesongspot.ui.theme.bottom_screen
 
 import android.app.Activity
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
-import android.util.Log
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,19 +28,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.ImageLoader
 import coil.compose.AsyncImage
-import coil.request.ErrorResult
-import coil.request.ImageRequest
 import com.example.composesongspot.BuildConfig.API_TOKEN
+import com.example.composesongspot.R
 import com.example.composesongspot.ui.theme.ViewModel.SongViewModel
 import com.example.composesongspot.ui.theme.bottom_screen.recorder.AndroidAudioRecorder
 import com.example.composesongspot.ui.theme.network.Result
 import com.example.composesongspot.ui.theme.network.SongResultResponse
-import java.io.ByteArrayOutputStream
 import java.io.File
 
 @Composable
@@ -76,86 +80,104 @@ fun FindSong(viewModel: SongViewModel = viewModel()) {
     }
 
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 350.dp, start = 75.dp, end = 75.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Button(onClick = {
-            if (canRecord) {
-                File(context.cacheDir, "audio.mp3").also {
-                    recorder.start(it)
-                    audioFile = it
-                    isRecording = true
-                }
-            } else if (isRecording) {
-                isLoading = true
-            } else {
-                Toast.makeText(context, "Permission Denied", Toast.LENGTH_LONG).show()
-            }
-        }) {
-            Text(text = if (isRecording) "RECORDING" else "START")
-        }
-        Spacer(modifier = Modifier.padding(8.dp))
-        Button(onClick = {
-            if (isRecording) {
-                recorder.stop()
-                isRecording = false
-                isLoading = true
-                if (audioFile == null || !audioFile!!.exists()) {
-                    Toast.makeText(
-                        context,
-                        "Audio file is null or does not exist",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-                audioFile?.let { file ->
-                    viewModel.uploadMp3(file,
-                        onSuccess = { downloadUrl ->
-                            viewModel.searchSong(
-                                apiToken = API_TOKEN,
-                                url = downloadUrl,
-                                _return = "spotify",
-                            ) { result ->
-                                when (result) {
-                                    is Result.Loading -> songInfo = "Loading..."
-                                    is Result.Success -> {
-                                        result.data?.result?.let {
-                                            songInfo = mapOf(
-                                                "Song Title" to it.title,
-                                                "Artist" to it.artist,
-                                                "Album" to it.album,
-                                                "Release Date" to it.release_date,
-                                                "Label" to it.label,
-                                                "Time Code" to it.timecode,
-                                                "Song Link" to it.song_link
-                                            ).toString()
-                                        }
+    )
+    {
 
-                                        isLoading = false
-                                    }
-
-                                    is Result.Error -> {
-                                        songInfo = mapOf("Error" to result.message).toString()
-                                        isLoading = false
-                                        Log.d("FINDSONG", "${result.message}")
-                                    }
-                                }
-                            }
-                        },
-                        onFailure = { errorMessage ->
-                            Log.d("KONTROLL", "Upload Failure: $errorMessage")
-                            songInfo = mapOf("Upload Error" to errorMessage).toString()
-                            isLoading = false
-                        }
-                    )
-                }
-            }
-        }) {
-            Text(text = "STOP")
-        }
-        Spacer(modifier = Modifier.padding(20.dp))
         if (isLoading) {
             LoadingAnimationDots()
+        }
+        Spacer(modifier = Modifier.padding(bottom = 70.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp), // Butonlar arasına boşluk
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Button(onClick = {
+                if (canRecord) {
+                    File(context.cacheDir, "audio.mp3").also {
+                        recorder.start(it)
+                        audioFile = it
+                        isRecording = true
+                    }
+                } else if (isRecording) {
+                    isLoading = true
+                } else {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.permission_denied), Toast.LENGTH_LONG
+                    ).show()
+                }
+            }) {
+                Text(
+                    text = if (isRecording) stringResource(R.string.recording) else stringResource(
+                        R.string.start
+                    )
+                )
+            }
+            Spacer(modifier = Modifier.padding(8.dp))
+            Button(onClick = {
+                if (isRecording) {
+                    recorder.stop()
+                    isRecording = false
+                    isLoading = true
+                    if (audioFile == null || !audioFile!!.exists()) {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.audio_file_is_null_or_does_not_exist),
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                    audioFile?.let { file ->
+                        viewModel.uploadMp3(file,
+                            onSuccess = { downloadUrl ->
+                                viewModel.searchSong(
+                                    apiToken = API_TOKEN,
+                                    url = downloadUrl,
+                                    _return = "spotify",
+                                ) { result ->
+                                    when (result) {
+                                        is Result.Loading -> songInfo =
+                                            context.getString(R.string.loading)
+
+                                        is Result.Success -> {
+                                            result.data?.result?.let {
+                                                songInfo = mapOf(
+                                                    context.getString(R.string.song_title) to it.title,
+                                                    context.getString(R.string.artist) to it.artist,
+                                                    context.getString(R.string.album) to it.album,
+                                                    context.getString(R.string.release_date) to it.release_date,
+                                                    context.getString(R.string.label) to it.label,
+                                                    context.getString(R.string.time_code) to it.timecode,
+                                                    context.getString(R.string.song_link) to it.song_link
+                                                ).toString()
+                                            }
+
+                                            isLoading = false
+                                        }
+
+                                        is Result.Error -> {
+                                            songInfo = mapOf("Error" to result.message).toString()
+                                            isLoading = false
+                                        }
+                                    }
+                                }
+                            },
+                            onFailure = { errorMessage ->
+                                songInfo = mapOf("Upload Error" to errorMessage).toString()
+                                isLoading = false
+                            }
+                        )
+                    }
+                }
+            }) {
+                Text(text = stringResource(R.string.stop))
+            }
         }
     }
 
@@ -175,19 +197,42 @@ fun FindSong(viewModel: SongViewModel = viewModel()) {
 
         if (songResponse is Result.Success) {
             (songResponse as? Result.Success<SongResultResponse?>)?.data?.result?.let {
-                Text(text = "Singer: ${it.artist}", color = Color.Black)
+                Text(text = stringResource(R.string.singer, it.artist), color = Color.Black)
 
-                Text(text = "Title: ${it.title}", color = Color.Black)
+                Text(text = stringResource(R.string.title, it.title), color = Color.Black)
 
-                Text(text = "Album: ${it.album}", color = Color.Black)
+                Text(text = stringResource(R.string.album_text, it.album), color = Color.Black)
 
-                Text(text = "Release Date: ${it.release_date}", color = Color.Black)
+                Text(
+                    text = stringResource(R.string.release_date_text, it.release_date),
+                    color = Color.Black
+                )
 
-                Text(text = "Label: ${it.label}", color = Color.Black)
+                Text(text = stringResource(R.string.label_text, it.label), color = Color.Black)
 
-                Text(text = "Time Code: ${it.timecode}", color = Color.Black)
+                Text(
+                    text = stringResource(R.string.time_code_text, it.timecode),
+                    color = Color.Black
+                )
+                ClickableText(text = buildAnnotatedString {
+                    withStyle(style = SpanStyle(color = Color.Blue,fontSize = 16.sp)){
+                        append( (stringResource(id = R.string.song_link)))
+                    }
+                    pushStringAnnotation(tag = "URL", annotation = it.song_link)
+                    withStyle(style = SpanStyle(color = Color.Blue, textDecoration = TextDecoration.Underline, fontSize = 16.sp)) {
+                        append(it.song_link)
+                    }
+                    pop()
+                }, onClick = { offset ->
+                    val annotations = buildAnnotatedString {
+                        pushStringAnnotation(tag = "URL", annotation = it.song_link)
+                    }.getStringAnnotations(tag = "URL", start = offset, end = offset)
 
-                Text(text = "Song Link: ${it.song_link}", color = Color.Black)
+                    annotations.firstOrNull()?.let { annotation ->
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(annotation.item))
+                        context.startActivity(intent)
+                    }
+                })
 
                 it.spotify.album.images.firstOrNull()?.let { songImageUrl ->
                     AsyncImage(
@@ -202,19 +247,4 @@ fun FindSong(viewModel: SongViewModel = viewModel()) {
             }
         }
     }
-}
-
-suspend fun getImageBytesFromUrl(context: Context, imageUrl: String): ByteArray {
-    val loader = ImageLoader(context)
-    val request = ImageRequest.Builder(context)
-        .data(imageUrl)
-        .allowHardware(false) // Gerekirse, çünkü ByteArray'e dönüştüreceğiz
-        .build()
-    val result = (loader.execute(request) as? ErrorResult)?.drawable
-    val bitmap = (result as? BitmapDrawable)?.bitmap
-
-    // Bitmap'i ByteArray'e dönüştürme
-    val outputStream = ByteArrayOutputStream()
-    bitmap?.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
-    return outputStream.toByteArray()
 }
