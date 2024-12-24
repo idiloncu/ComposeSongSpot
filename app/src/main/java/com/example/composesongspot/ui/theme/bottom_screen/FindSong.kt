@@ -19,6 +19,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,12 +33,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.composesongspot.BuildConfig.API_TOKEN
 import com.example.composesongspot.R
@@ -48,7 +50,7 @@ import com.example.composesongspot.ui.theme.network.SongResultResponse
 import java.io.File
 
 @Composable
-fun FindSong(viewModel: SongViewModel = viewModel()) {
+fun FindSong(viewModel: SongViewModel = hiltViewModel()) {
     val context = LocalContext.current
     val activity = context as Activity
     val recorder = remember { AndroidAudioRecorder(context) }
@@ -56,9 +58,8 @@ fun FindSong(viewModel: SongViewModel = viewModel()) {
     var isRecording by rememberSaveable { mutableStateOf(false) }
     var songInfo by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
-    var songResponse by remember { mutableStateOf<Result<SongResultResponse?>>(Result.loading()) }
+    val songResponse by viewModel.searchSongResponse.collectAsState()
 
-    // Request audio permissions
     LaunchedEffect(Unit) {
         ActivityCompat.requestPermissions(
             activity,
@@ -82,7 +83,7 @@ fun FindSong(viewModel: SongViewModel = viewModel()) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 350.dp, start = 75.dp, end = 75.dp),
+            .padding(top = 250.dp, start = 75.dp, end = 75.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     )
@@ -90,30 +91,37 @@ fun FindSong(viewModel: SongViewModel = viewModel()) {
 
         if (isLoading) {
             LoadingAnimationDots()
+            Text(
+                text = "SEARCHING THE SONG",
+                style = TextStyle(fontWeight = FontWeight.Bold, color = Color.Blue),
+                modifier = Modifier.padding(10.dp)
+            )
         }
-        Spacer(modifier = Modifier.padding(bottom = 70.dp))
+        Spacer(modifier = Modifier.padding(top = 150.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp), // Butonlar arasına boşluk
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Button(onClick = {
-                if (canRecord) {
-                    File(context.cacheDir, "audio.mp3").also {
-                        recorder.start(it)
-                        audioFile = it
-                        isRecording = true
+            Button(
+                onClick = {
+                    if (canRecord) {
+                        File(context.cacheDir, "audio.mp3").also {
+                            recorder.start(it)
+                            audioFile = it
+                            isRecording = true
+                        }
+                    } else if (isRecording) {
+                        isLoading = true
+                    } else {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.permission_denied), Toast.LENGTH_LONG
+                        ).show()
                     }
-                } else if (isRecording) {
-                    isLoading = true
-                } else {
-                    Toast.makeText(
-                        context,
-                        context.getString(R.string.permission_denied), Toast.LENGTH_LONG
-                    ).show()
-                }
-            }) {
+                },
+            ) {
                 Text(
                     text = if (isRecording) stringResource(R.string.recording) else stringResource(
                         R.string.start
@@ -188,13 +196,6 @@ fun FindSong(viewModel: SongViewModel = viewModel()) {
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.Start
     ) {
-        LaunchedEffect(viewModel.searchSongResponse.value) {
-            println(viewModel.searchSongResponse.value)
-            viewModel.searchSongResponse.value?.let {
-                songResponse = it
-            }
-        }
-
         if (songResponse is Result.Success) {
             (songResponse as? Result.Success<SongResultResponse?>)?.data?.result?.let {
                 Text(text = stringResource(R.string.singer, it.artist), color = Color.Black)
@@ -215,11 +216,17 @@ fun FindSong(viewModel: SongViewModel = viewModel()) {
                     color = Color.Black
                 )
                 ClickableText(text = buildAnnotatedString {
-                    withStyle(style = SpanStyle(color = Color.Blue,fontSize = 16.sp)){
-                        append( (stringResource(id = R.string.song_link)))
+                    withStyle(style = SpanStyle(color = Color.Blue, fontSize = 16.sp)) {
+                        append((stringResource(id = R.string.song_link)))
                     }
                     pushStringAnnotation(tag = "URL", annotation = it.song_link)
-                    withStyle(style = SpanStyle(color = Color.Blue, textDecoration = TextDecoration.Underline, fontSize = 16.sp)) {
+                    withStyle(
+                        style = SpanStyle(
+                            color = Color.Blue,
+                            textDecoration = TextDecoration.Underline,
+                            fontSize = 16.sp
+                        )
+                    ) {
                         append(it.song_link)
                     }
                     pop()

@@ -1,76 +1,201 @@
 package com.example.composesongspot.ui.theme.bottom_screen
 
-import androidx.compose.foundation.Image
+import android.Manifest
+import android.content.Intent
+import android.net.Uri
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Card
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.composesongspot.Screen
-import com.example.composesongspot.ui.theme.MusicCardInfo
-import com.example.composesongspot.ui.theme.getAllMusicCardInfo
+import coil.compose.AsyncImage
+import com.example.composesongspot.ui.theme.ViewModel.SongViewModel
 
 @Composable
-fun Home(navController: NavController) {
-    LazyColumnDemo(navController)
-}
-
-@Composable
-fun LazyColumnDemo(navController: NavController) {
-    val myList = getAllMusicCardInfo()
-    LazyColumn(content = {
-        itemsIndexed(myList, itemContent = { index, item ->
-            CardItems(item = item, navController=navController)
-        })
-    })
-}
-
-@Composable
-fun CardItems(item: MusicCardInfo, navController: NavController) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-            .clickable {
-                navController.navigate(Screen.CommentScreen.Comment.cRoute)
+fun Home(navController: NavController, viewModel: SongViewModel = hiltViewModel()) {
+    LazyColumnDemo(navController, viewModel)
+    val songs by viewModel.songs
+    val context = LocalContext.current
+    val errorMessage by viewModel.errorMessage
+    val locationPermissionRequest = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        when {
+            permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true -> {
+                Log.d("Home", "Precise location access granted.")
             }
-    ) {
-        Image(painter = painterResource(id = item.albumPhoto), contentDescription = item.albumName,
-            modifier = Modifier
-                .clip(RectangleShape)
-                .size(74.dp)
-                .scale(1.0f)
+
+            permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true -> {
+                Log.d("Home", "Approximate location access granted.")
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        locationPermissionRequest.launch(
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
         )
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.Start
-        ) {
-            Column {
-                Text(text = item.songName, style = TextStyle(fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray))
-                Text(text = item.artistName, style = TextStyle(fontSize = 21.sp,fontWeight = FontWeight.Bold, color = Color.DarkGray))
-                Text(text = item.albumName, style = TextStyle(fontSize = 18.sp))
-                Text(text = item.whoShared, style = TextStyle(fontSize = 18.sp))
-                Text(text = item.location, style = TextStyle(fontSize = 18.sp))
+    }
+
+    Column (modifier = Modifier.fillMaxSize())  {
+        when {
+            errorMessage != null -> {
+                Text(
+                    text = "Error: ${errorMessage.orEmpty()}",
+                    color = Color.Red,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+
+            songs.isEmpty() -> {
+                Text(
+                    text = "No songs available.",
+                    style = MaterialTheme.typography.h6,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+
+            else -> {
+                LazyColumn {
+                    items(songs) { song ->
+                        CardItems(item = song)
+                    }
+                }
             }
         }
     }
 }
+
+@Composable
+fun LazyColumnDemo(navController: NavController,viewModel: SongViewModel) {
+    var musicList by remember { mutableStateOf<List<MusicCardInfo>>(emptyList()) }
+
+    LaunchedEffect(Unit) {
+        viewModel.getAllSongs(
+            onSuccess = { songInfoList ->
+                musicList = songInfoList.map { songInfo ->
+                    MusicCardInfo(
+                        songName = songInfo.songName,
+                        artistName = songInfo.artistName,
+                        albumName = songInfo.albumName,
+                        whoShared = songInfo.whoShared,
+                        location = songInfo.location,
+                        songUrl = songInfo.songUrl
+                    )
+                }
+                Log.d("HOME", "LazyColumnDemo: $musicList ")
+            },
+            onFailure = { errorMessage ->
+                Log.e("LazyColumnDemo", "Error fetching songs: $errorMessage")
+            }
+        )
+    }
+
+    LazyColumn(content = {
+        itemsIndexed(musicList) { index, item ->
+            CardItems(item = item)
+        }
+    })
+}
+
+@Composable
+fun CardItems(item: MusicCardInfo) {
+    val context = LocalContext.current
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .clickable {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(item.songUrl))
+                context.startActivity(intent)
+            },
+        elevation = 4.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = item.songName,
+                    style = MaterialTheme.typography.h6,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Artist: ${item.artistName}",
+                    style = MaterialTheme.typography.body1
+                )
+                Text(
+                    text = "Album: ${item.albumName}",
+                    style = MaterialTheme.typography.body2,
+                    color = Color.Gray
+                )
+                Text(
+                    text = "Shared by: ${item.whoShared}",
+                    style = MaterialTheme.typography.body2,
+                    color = Color.Gray
+                )
+                Text(
+                    text = "Location: ${item.location}",
+                    style = MaterialTheme.typography.body2,
+                    color = Color.Gray
+                )
+            }
+            AsyncImage(
+                model = item.songUrl,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Crop
+            )
+        }
+    }
+}
+
+// Data class representing the music card info
+data class MusicCardInfo(
+    val songName: String,
+    val artistName: String,
+    val albumName: String,
+    val whoShared: String,
+    val location: String,
+    val songUrl: String
+)

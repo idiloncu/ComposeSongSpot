@@ -68,6 +68,7 @@ dependencies {
     implementation(libs.firebase.crashlytics.buildtools)
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.storage.ktx)
+    implementation(libs.play.services.location)
 
     val nav_version = "2.7.5"
     val compose_version = "1.6.0-alpha08"
@@ -91,6 +92,7 @@ dependencies {
     //Dagger Hilt
     implementation(libs.google.dagger.hilt)
     ksp(libs.google.dagger.hilt.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
     //Retrofit
     implementation(libs.squareup.retrofit)
     implementation(libs.squareup.retrofit2)

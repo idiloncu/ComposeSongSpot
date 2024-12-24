@@ -1,5 +1,6 @@
 [versions]
 agp = "8.5.0"
+hiltNavigationCompose = "1.2.0"
 kotlin = "1.9.0"
 coreKtx = "1.15.0"
 junit = "4.13.2"
@@ -22,8 +23,10 @@ firebaseDatabase = "21.0.0"
 firebaseCrashlyticsBuildtools = "3.0.2"
 firebaseFirestoreKtx = "25.1.1"
 firebaseStorageKtx = "21.0.1"
+playServicesLocation = "21.3.0"
 
 [libraries]
+androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
 androidx-runtime={group="androidx.room",name="room-runtime",version.ref="roomVersion"}
 androidx-compiler={group="androidx.room",name="room-compiler",version.ref="roomVersion"}
@@ -37,7 +40,6 @@ squareup-retrofit={group="com.squareup.retrofit2",name="retrofit",version.ref="r
 squareup-retrofit2={group="com.squareup.retrofit2",name="converter-gson",version.ref="retrofit"}
 squareup-okhttp3={group="com.squareup.okhttp3",name="okhttp",version.ref="okhttpVersion"}
 squareup-okhttp3-logging-interceptor={group="com.squareup.okhttp3",name="logging-interceptor",version.ref="retrofitInterceptorVersion"}
-
 
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -59,6 +61,7 @@ firebase-database = { group = "com.google.firebase", name = "firebase-database",
 firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "firebase-crashlytics-buildtools", version.ref = "firebaseCrashlyticsBuildtools" }
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 firebase-storage-ktx = { group = "com.google.firebase", name = "firebase-storage-ktx", version.ref = "firebaseStorageKtx" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -66,4 +69,3 @@ jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = 
 dagger-hilt-android={id="com.google.dagger.hilt.android",version.ref="hiltVersion"}
 google-devtools-ksp = { id = "com.google.devtools.ksp", version = "1.9.0-1.0.12" }
 google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
-
