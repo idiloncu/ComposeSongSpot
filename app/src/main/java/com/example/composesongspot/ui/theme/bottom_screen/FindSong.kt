@@ -47,6 +47,8 @@ import com.example.composesongspot.ui.theme.ViewModel.SongViewModel
 import com.example.composesongspot.ui.theme.bottom_screen.recorder.AndroidAudioRecorder
 import com.example.composesongspot.ui.theme.network.Result
 import com.example.composesongspot.ui.theme.network.SongResultResponse
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import java.io.File
 
 @Composable
@@ -154,7 +156,7 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel()) {
                                             context.getString(R.string.loading)
 
                                         is Result.Success -> {
-                                            result.data?.result?.let {
+                                            result.data.result.let {
                                                 songInfo = mapOf(
                                                     context.getString(R.string.song_title) to it.title,
                                                     context.getString(R.string.artist) to it.artist,
@@ -164,6 +166,22 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel()) {
                                                     context.getString(R.string.time_code) to it.timecode,
                                                     context.getString(R.string.song_link) to it.song_link
                                                 ).toString()
+
+                                                val musicCardInfo = MusicCardInfo(
+                                                    songName = it.title,
+                                                    artistName = it.artist,
+                                                    albumName = it.album,
+                                                    whoShared = Firebase.auth.currentUser?.uid
+                                                        ?: "",
+                                                    location = "",
+                                                    songUrl = it.song_link,
+                                                    albumCoverUrl = it.spotify.album.images.firstOrNull()?.url
+                                                        ?: ""
+                                                )
+                                                viewModel.saveSongToDatabase(
+                                                    musicCardInfo,
+                                                    onSuccess = {},
+                                                    onFailure = {})
                                             }
 
                                             isLoading = false
@@ -208,7 +226,6 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel()) {
                     text = stringResource(R.string.release_date_text, it.release_date),
                     color = Color.Black
                 )
-
                 Text(text = stringResource(R.string.label_text, it.label), color = Color.Black)
 
                 Text(

@@ -52,4 +52,6 @@
     <string name="about">Hakkında</string>
     <string name="home_title">Anasayfa</string>
     <string name="recorded">KAYDEDİLİYOR...</string>
+    <string name="shared_by">Paylaşan </string>
+    <string name="location">Konum </string>
 </resources>

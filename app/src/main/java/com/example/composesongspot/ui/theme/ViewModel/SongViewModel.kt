@@ -1,11 +1,15 @@
 package com.example.composesongspot.ui.theme.ViewModel
 
-import android.app.Application
+import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
+import android.location.Location
 import android.util.Log
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.core.content.ContextCompat
+import androidx.compose.runtime.setValue
+import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,11 +18,13 @@ import com.example.composesongspot.ui.theme.bottom_screen.MusicCardInfo
 import com.example.composesongspot.ui.theme.network.Result
 import com.example.composesongspot.ui.theme.network.RetrofitInstance
 import com.example.composesongspot.ui.theme.network.SongResultResponse
-import com.google.android.gms.location.LocationServices
-import com.google.firebase.auth.ktx.auth
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.firebase.database.database
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,14 +34,15 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
+import java.lang.reflect.Type
 import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
-class SongViewModel @Inject constructor(
-    private val application: Application
-) : ViewModel() {
-
+class SongViewModel @Inject constructor(private val fusedLocationProviderClient: FusedLocationProviderClient) :
+    ViewModel() {
+    var currentLocation by mutableStateOf<Location?>(null)
+        private set
     private val _searchSongResponse = MutableStateFlow<Result<SongResultResponse>?>(null)
     val searchSongResponse: StateFlow<Result<SongResultResponse>?> = _searchSongResponse
     private val _songs = mutableStateOf<List<MusicCardInfo>>(emptyList())
@@ -78,7 +85,6 @@ class SongViewModel @Inject constructor(
         }
     }
 
-    // upload an MP3 file to Firebase Storage
     fun uploadMp3(file: File, onSuccess: (String) -> Unit, onFailure: (String) -> Unit) {
         val uuid = UUID.randomUUID()
         val mp3Name = "$uuid.mp3"
@@ -99,7 +105,6 @@ class SongViewModel @Inject constructor(
         }
     }
 
-    // upload an MP3 file URL's to server
     fun postAudioToServer(downloadUrl: String) {
         _searchSongResponse.value = Result.Loading
         val apiInterface = RetrofitInstance.api
@@ -135,73 +140,33 @@ class SongViewModel @Inject constructor(
     }
 
     fun getAllSongs(onSuccess: (List<MusicCardInfo>) -> Unit, onFailure: (String) -> Unit) {
-        val uuid = UUID.randomUUID()
-        val mp3Name = "$uuid.mp3"
-        val storage = Firebase.storage
-        val reference = storage.reference.child("audios").child(mp3Name)
-        val fusedLocationProvider = LocationServices.getFusedLocationProviderClient(application)
-        val permission = android.Manifest.permission.ACCESS_FINE_LOCATION
-        if (ContextCompat.checkSelfPermission(
-                application,
-                permission
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            onFailure("Location permission not granted.")
-            return
-        }
+        val db = com.google.firebase.Firebase.database
+        val reference = db.reference.child("songs")
 
         try {
-            fusedLocationProvider.lastLocation.addOnSuccessListener { location ->
-                val userLocation = if (location != null) {
-                    "Lat: ${location.latitude}, Lng: ${location.longitude}"
-                } else {
-                    "Unknown Location"
-                }
+            reference.get()
+                .addOnSuccessListener { listResult ->
+                    Log.d("SongViewModel", "getAllSongs: ${listResult.value}")
+                    val songsList = mutableListOf<MusicCardInfo>()
+                    listResult.children.forEach { item ->
+                        val songValueMap = item.value as? Map<*, *>
+                        val songInfo = MusicCardInfo(
+                            songName = songValueMap?.get("songName").toString(),
+                            artistName = songValueMap?.get("artistName").toString(),
+                            albumName = songValueMap?.get("albumName").toString(),
+                            whoShared = songValueMap?.get("whoShared").toString(),
+                            location = songValueMap?.get("location").toString(),
+                            songUrl = songValueMap?.get("songUrl").toString(),
+                            albumCoverUrl = songValueMap?.get("albumCoverUrl").toString()
+                        )
 
-                reference.listAll().addOnSuccessListener { listResult ->
-                    val songInfoList = mutableListOf<MusicCardInfo>()
-                    val totalItems = listResult.items.size
-
-                    if (totalItems == 0) {
-                        onSuccess(emptyList())
-                        return@addOnSuccessListener
+                        songsList.add(songInfo)
+                        println("asdad ${songValueMap?.get("songName").toString()}")
                     }
-
-                    listResult.items.forEach { item ->
-                        item.getMetadata().addOnSuccessListener { metadata ->
-                            val songName = metadata.getCustomMetadata("songName") ?: item.name
-                            val artistName =
-                                metadata.getCustomMetadata("artistName") ?: "Unknown Artist"
-                            val albumName =
-                                metadata.getCustomMetadata("albumName") ?: "Unknown Album"
-                            val whoShared = metadata.getCustomMetadata("whoShared")
-                                ?: Firebase.auth.currentUser?.displayName ?: ""
-
-                            item.downloadUrl.addOnSuccessListener { uri ->
-                                val songInfo = MusicCardInfo(
-                                    songName = songName,
-                                    artistName = artistName,
-                                    albumName = albumName,
-                                    whoShared = whoShared,
-                                    location = userLocation,
-                                    songUrl = uri.toString()
-                                )
-                                songInfoList.add(songInfo)
-
-                                if (songInfoList.size == totalItems) {
-                                    onSuccess(songInfoList)
-                                }
-                            }.addOnFailureListener { exception ->
-                                onFailure("Failed to get download URL for: ${item.name}, Error: ${exception.message}")
-                            }
-                        }.addOnFailureListener { exception ->
-                            onFailure("Failed to get metadata for: ${item.name}, Error: ${exception.message}")
-                        }
-                    }
+                    onSuccess(songsList)
                 }.addOnFailureListener { exception ->
                     onFailure("Failed to list all songs: ${exception.message}")
                 }
-            }
         } catch (e: Exception) {
             onFailure("Permission error: ${e.message}")
         }
@@ -234,67 +199,8 @@ class SongViewModel @Inject constructor(
             }
     }
 
-    fun saveSearchedSong(
-        apiToken: String,
-        url: String,
-        _return: String,
-        onSuccess: () -> Unit,
-        onFailure: (String) -> Unit
-    ) {
-        searchSong(apiToken, url, _return) { result ->
-            when (result) {
-                is Result.Success -> {
-                    val songResponse = result.data
-                    val songInfo = MusicCardInfo(
-                        songName = songResponse.result.title ?: "Unknown Song",
-                        artistName = songResponse.result.artist ?: "Unknown Artist",
-                        albumName = songResponse.result.album ?: "Unknown Album",
-                        whoShared = "CurrentUser",
-                        location = "Unknown Location",
-                        songUrl = url
-                    )
-
-                    saveSongToDatabase(
-                        song = songInfo,
-                        onSuccess = {
-                            onSuccess()
-                        },
-                        onFailure = { error ->
-                            onFailure("Failed to save searched song: $error")
-                        }
-                    )
-                }
-
-                is Result.Error -> {
-                    onFailure("Failed to search song: ${result.message}")
-                }
-
-                is Result.Loading -> {
-
-                }
-            }
-        }
-        saveSearchedSong(
-            apiToken = "your_api_token",
-            url = "song_url",
-            _return = "spotify",
-            onSuccess = {
-                println("Song saved successfully!")
-            },
-            onFailure = { errorMessage ->
-                println("Error: $errorMessage")
-            }
-        )
-    }
-
-    fun fetchSongs() {
-        getAllSongs(
-            onSuccess = { songList ->
-                _songs.value = songList
-            },
-            onFailure = { error ->
-                _errorMessage.value = error
-            }
-        )
+    inline fun <reified T> String.convertToListObject(): List<T>? {
+        val listType: Type = object : TypeToken<List<T?>?>() {}.type
+        return Gson().fromJson<List<T>>(this, listType)
     }
 }

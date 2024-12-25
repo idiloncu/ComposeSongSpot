@@ -2,6 +2,7 @@ package com.example.composesongspot.ui.theme.bottom_screen
 
 import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -32,11 +33,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.composesongspot.R
 import com.example.composesongspot.ui.theme.ViewModel.SongViewModel
 
 @Composable
@@ -68,20 +72,32 @@ fun Home(navController: NavController, viewModel: SongViewModel = hiltViewModel(
         )
     }
 
+    LaunchedEffect(Unit) {
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            viewModel.currentLocation.let { location ->
+                if (location != null) {
+                    Log.d("Home", "Current location: ${location.latitude}, ${location.longitude}")
+                } else {
+                    Log.e("Home", "Location is null")
+                }
+            }
+        }
+    }
+
     Column (modifier = Modifier.fillMaxSize())  {
         when {
             errorMessage != null -> {
                 Text(
                     text = "Error: ${errorMessage.orEmpty()}",
                     color = Color.Red,
-                    modifier = Modifier.padding(16.dp)
-                )
-            }
-
-            songs.isEmpty() -> {
-                Text(
-                    text = "No songs available.",
-                    style = MaterialTheme.typography.h6,
                     modifier = Modifier.padding(16.dp)
                 )
             }
@@ -111,9 +127,11 @@ fun LazyColumnDemo(navController: NavController,viewModel: SongViewModel) {
                         albumName = songInfo.albumName,
                         whoShared = songInfo.whoShared,
                         location = songInfo.location,
-                        songUrl = songInfo.songUrl
+                        songUrl = songInfo.songUrl,
+                        albumCoverUrl = songInfo.albumCoverUrl
                     )
                 }
+                println(musicList)
                 Log.d("HOME", "LazyColumnDemo: $musicList ")
             },
             onFailure = { errorMessage ->
@@ -156,11 +174,13 @@ fun CardItems(item: MusicCardInfo) {
                 Text(
                     text = item.songName,
                     style = MaterialTheme.typography.h6,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
                 )
                 Text(
                     text = "Artist: ${item.artistName}",
-                    style = MaterialTheme.typography.body1
+                    style = MaterialTheme.typography.body1,
+                    color = Color.DarkGray
                 )
                 Text(
                     text = "Album: ${item.albumName}",
@@ -179,7 +199,7 @@ fun CardItems(item: MusicCardInfo) {
                 )
             }
             AsyncImage(
-                model = item.songUrl,
+                model = item.albumCoverUrl,
                 contentDescription = null,
                 modifier = Modifier
                     .size(64.dp)
@@ -190,12 +210,12 @@ fun CardItems(item: MusicCardInfo) {
     }
 }
 
-// Data class representing the music card info
 data class MusicCardInfo(
     val songName: String,
     val artistName: String,
     val albumName: String,
     val whoShared: String,
     val location: String,
-    val songUrl: String
+    val songUrl: String,
+    val albumCoverUrl: String
 )
