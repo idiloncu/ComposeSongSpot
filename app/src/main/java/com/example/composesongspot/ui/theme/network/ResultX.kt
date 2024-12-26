@@ -8,5 +8,5 @@ data class ResultX(
     val song_link: String,
     val spotify: Spotify,
     val timecode: String,
-    val title: String
+    val title: String? = "Unknown Song Name"
 )

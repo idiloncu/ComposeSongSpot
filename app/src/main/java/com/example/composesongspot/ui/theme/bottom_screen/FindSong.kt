@@ -167,21 +167,25 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel()) {
                                                     context.getString(R.string.song_link) to it.song_link
                                                 ).toString()
 
-                                                val musicCardInfo = MusicCardInfo(
-                                                    songName = it.title,
-                                                    artistName = it.artist,
-                                                    albumName = it.album,
-                                                    whoShared = Firebase.auth.currentUser?.uid
-                                                        ?: "",
-                                                    location = "",
-                                                    songUrl = it.song_link,
-                                                    albumCoverUrl = it.spotify.album.images.firstOrNull()?.url
-                                                        ?: ""
-                                                )
-                                                viewModel.saveSongToDatabase(
-                                                    musicCardInfo,
-                                                    onSuccess = {},
-                                                    onFailure = {})
+                                                val musicCardInfo = it.title?.let { it1 ->
+                                                    MusicCardInfo(
+                                                        songName = it1,
+                                                        artistName = it.artist,
+                                                        albumName = it.album,
+                                                        whoShared = Firebase.auth.currentUser?.uid
+                                                            ?: "",
+                                                        location = "",
+                                                        songUrl = it.song_link,
+                                                        albumCoverUrl = it.spotify.album.images.firstOrNull()?.url
+                                                            ?: ""
+                                                    )
+                                                }
+                                                musicCardInfo?.let { it1 ->
+                                                    viewModel.saveSongToDatabase(
+                                                        it1,
+                                                        onSuccess = {},
+                                                        onFailure = {})
+                                                }
                                             }
 
                                             isLoading = false
@@ -218,7 +222,7 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel()) {
             (songResponse as? Result.Success<SongResultResponse?>)?.data?.result?.let {
                 Text(text = stringResource(R.string.singer, it.artist), color = Color.Black)
 
-                Text(text = stringResource(R.string.title, it.title), color = Color.Black)
+                Text(text = stringResource(R.string.title, it.title?: "Unknown Song Name"), color = Color.Black)
 
                 Text(text = stringResource(R.string.album_text, it.album), color = Color.Black)
 

@@ -1,15 +1,11 @@
 package com.example.composesongspot.ui.theme.ViewModel
 
-import android.Manifest
-import android.content.Context
-import android.content.pm.PackageManager
 import android.location.Location
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.core.app.ActivityCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -18,7 +14,6 @@ import com.example.composesongspot.ui.theme.bottom_screen.MusicCardInfo
 import com.example.composesongspot.ui.theme.network.Result
 import com.example.composesongspot.ui.theme.network.RetrofitInstance
 import com.example.composesongspot.ui.theme.network.SongResultResponse
-import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.firebase.database.database
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
@@ -39,8 +34,7 @@ import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
-class SongViewModel @Inject constructor(private val fusedLocationProviderClient: FusedLocationProviderClient) :
-    ViewModel() {
+class SongViewModel @Inject constructor() : ViewModel() {
     var currentLocation by mutableStateOf<Location?>(null)
         private set
     private val _searchSongResponse = MutableStateFlow<Result<SongResultResponse>?>(null)
@@ -187,7 +181,8 @@ class SongViewModel @Inject constructor(private val fusedLocationProviderClient:
             "whoShared" to song.whoShared,
             "location" to song.location,
             "songUrl" to song.songUrl,
-            "timestamp" to System.currentTimeMillis()
+            "timestamp" to System.currentTimeMillis(),
+            "albumCoverUrl" to song.albumCoverUrl
         )
 
         songRef.setValue(songData)
