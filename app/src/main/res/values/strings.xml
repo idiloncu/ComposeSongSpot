@@ -54,4 +54,6 @@
     <string name="recorded">RECORDED…</string>
     <string name="shared_by">Shared by: </string>
     <string name="location">Location: </string>
+    <string name="bilinmeyen_sehir">Bilinmeyen Şehir</string>
+    <string name="bilinmeyen_ulke">Bilinmeyen Ülke</string>
 </resources>

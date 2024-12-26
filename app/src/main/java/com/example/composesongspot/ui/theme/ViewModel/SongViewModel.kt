@@ -1,5 +1,7 @@
 package com.example.composesongspot.ui.theme.ViewModel
 
+import android.content.Context
+import android.location.Geocoder
 import android.location.Location
 import android.util.Log
 import androidx.compose.runtime.State
@@ -10,10 +12,12 @@ import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.composesongspot.BuildConfig.API_TOKEN
+import com.example.composesongspot.R
 import com.example.composesongspot.ui.theme.bottom_screen.MusicCardInfo
 import com.example.composesongspot.ui.theme.network.Result
 import com.example.composesongspot.ui.theme.network.RetrofitInstance
 import com.example.composesongspot.ui.theme.network.SongResultResponse
+import com.google.android.gms.location.LocationServices
 import com.google.firebase.database.database
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
@@ -30,6 +34,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
 import java.lang.reflect.Type
+import java.util.Locale
 import java.util.UUID
 import javax.inject.Inject
 
@@ -149,13 +154,13 @@ class SongViewModel @Inject constructor() : ViewModel() {
                             artistName = songValueMap?.get("artistName").toString(),
                             albumName = songValueMap?.get("albumName").toString(),
                             whoShared = songValueMap?.get("whoShared").toString(),
+                            userName = songValueMap?.get("userName").toString(),
                             location = songValueMap?.get("location").toString(),
                             songUrl = songValueMap?.get("songUrl").toString(),
                             albumCoverUrl = songValueMap?.get("albumCoverUrl").toString()
                         )
 
                         songsList.add(songInfo)
-                        println("asdad ${songValueMap?.get("songName").toString()}")
                     }
                     onSuccess(songsList)
                 }.addOnFailureListener { exception ->
@@ -192,6 +197,56 @@ class SongViewModel @Inject constructor() : ViewModel() {
             .addOnFailureListener { exception ->
                 onFailure("Failed to save song to Realtime Database: ${exception.message}")
             }
+    }
+
+    private fun fetchLocation(context: Context, onSuccess: (Location?) -> Unit, onFailure: (String) -> Unit) {
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+        try {
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                onSuccess(location)
+            }.addOnFailureListener { exception ->
+                onFailure(exception.message ?: "Failed to get location")
+            }
+        } catch (e: SecurityException) {
+            onFailure("Permission denied: ${e.message}")
+        }
+    }
+
+    fun getHumanReadableLocation(context: Context, latitude: Double, longitude: Double): String {
+        return try {
+            val geocoder = Geocoder(context, Locale.getDefault())
+            val addresses = geocoder.getFromLocation(latitude, longitude, 1)
+            if (!addresses.isNullOrEmpty()) {
+                val address = addresses[0]
+                "${address.locality ?: context.getString(R.string.bilinmeyen_sehir)}, ${address.countryName ?: context.getString(
+                    R.string.bilinmeyen_ulke
+                )}"
+            } else {
+                 "Konum bilgisi bulunamadı"
+            }
+        } catch (e: Exception) {
+            Log.e("Geocoder", "Hata: ${e.message}")
+            "Geocoder kullanılırken hata oluştu"
+        }
+    }
+
+    fun updateLocation(context: Context) {
+        fetchLocation(context,
+            onSuccess = { location ->
+                currentLocation = location
+                if (location != null) {
+                    val humanReadableLocation = getHumanReadableLocation(
+                        context, location.latitude, location.longitude
+                    )
+                    Log.d("SongViewModel", "Location updated: $humanReadableLocation")
+                } else {
+                    Log.d("SongViewModel", "Konum bilgisi alınamadı")
+                }
+            },
+            onFailure = { error ->
+                Log.e("SongViewModel", "Error fetching location: $error")
+            }
+        )
     }
 
     inline fun <reified T> String.convertToListObject(): List<T>? {

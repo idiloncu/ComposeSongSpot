@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -76,20 +77,12 @@ fun Home(navController: NavController, viewModel: SongViewModel = hiltViewModel(
     LaunchedEffect(Unit) {
         if (ActivityCompat.checkSelfPermission(
                 context,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED &&
-            ActivityCompat.checkSelfPermission(
-                context,
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            viewModel.currentLocation.let { location ->
-                if (location != null) {
-                    Log.d("Home", "Current location: ${location.latitude}, ${location.longitude}")
-                } else {
-                    Log.e("Home", "Location is null")
-                }
-            }
+            viewModel.updateLocation(context)
+        } else {
+            Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -117,23 +110,35 @@ fun Home(navController: NavController, viewModel: SongViewModel = hiltViewModel(
 @Composable
 fun LazyColumnDemo(navController: NavController, viewModel: SongViewModel) {
     var musicList by remember { mutableStateOf<List<MusicCardInfo>>(emptyList()) }
-
+    val context = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.getAllSongs(
             onSuccess = { songInfoList ->
+                val currentLocation = viewModel.currentLocation
+                val locationText = if (currentLocation != null) {
+                    viewModel.getHumanReadableLocation(
+                        context = context,
+                        latitude = currentLocation.latitude,
+                        longitude = currentLocation.longitude
+                    )
+                } else {
+                    "No Location"
+                }
+                Log.d("HOME", "currentLocation: $currentLocation")
                 musicList = songInfoList.map { songInfo ->
                     MusicCardInfo(
                         songName = songInfo.songName,
                         artistName = songInfo.artistName,
                         albumName = songInfo.albumName,
                         whoShared = songInfo.whoShared,
-                        location = songInfo.location,
+                        userName = songInfo.userName,
+                        location = locationText,
                         songUrl = songInfo.songUrl,
                         albumCoverUrl = songInfo.albumCoverUrl
                     )
                 }
                 println(musicList)
-                Log.d("HOME", "LazyColumnDemo: $musicList ")
+                Log.d("HOME", "locationText: $locationText ")
             },
             onFailure = { errorMessage ->
                 Log.e("LazyColumnDemo", "Error fetching songs: $errorMessage")
@@ -201,12 +206,12 @@ fun CardItems(item: MusicCardInfo) {
                     color = Color.Gray
                 )
                 Text(
-                    text = "Shared by: ${item.whoShared}",
+                    text = "Shared by: ${item.whoShared.ifBlank { "Unknown User" }}",
                     style = MaterialTheme.typography.body2,
                     color = Color.Gray
                 )
                 Text(
-                    text = "Location: ${item.location}",
+                    text = "Location: ${item.location.ifBlank { "Unknown Location" }}",
                     style = MaterialTheme.typography.body2,
                     color = Color.Gray
                 )
@@ -220,6 +225,7 @@ data class MusicCardInfo(
     val artistName: String,
     val albumName: String,
     val whoShared: String,
+    val userName: String,
     val location: String,
     val songUrl: String,
     val albumCoverUrl: String

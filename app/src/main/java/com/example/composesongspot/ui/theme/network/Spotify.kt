@@ -1,7 +1,7 @@
 package com.example.composesongspot.ui.theme.network
 
 data class Spotify(
-    val album: Album,
+    val album: Album?,
     val artists: List<ArtistX>,
     val available_markets: List<String>,
     val disc_number: Int,

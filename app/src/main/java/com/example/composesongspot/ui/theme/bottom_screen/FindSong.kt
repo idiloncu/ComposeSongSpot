@@ -156,9 +156,9 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel()) {
                                             context.getString(R.string.loading)
 
                                         is Result.Success -> {
-                                            result.data.result.let {
+                                            result?.data?.result?.let {
                                                 songInfo = mapOf(
-                                                    context.getString(R.string.song_title) to it.title,
+                                                    context.getString(R.string.song_title,) to it.title,
                                                     context.getString(R.string.artist) to it.artist,
                                                     context.getString(R.string.album) to it.album,
                                                     context.getString(R.string.release_date) to it.release_date,
@@ -168,17 +168,22 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel()) {
                                                 ).toString()
 
                                                 val musicCardInfo = it.title?.let { it1 ->
-                                                    MusicCardInfo(
-                                                        songName = it1,
-                                                        artistName = it.artist,
-                                                        albumName = it.album,
-                                                        whoShared = Firebase.auth.currentUser?.uid
-                                                            ?: "",
-                                                        location = "",
-                                                        songUrl = it.song_link,
-                                                        albumCoverUrl = it.spotify.album.images.firstOrNull()?.url
-                                                            ?: ""
-                                                    )
+                                                    it.artist?.let { it2 ->
+                                                        it.album?.let { it3 ->
+                                                            MusicCardInfo(
+                                                                songName = it1,
+                                                                artistName = it2,
+                                                                albumName = it3,
+                                                                whoShared = Firebase.auth.currentUser?.uid
+                                                                    ?: "",
+                                                                userName = Firebase.auth.currentUser?.displayName ?: "Unknown",
+                                                                location = "",
+                                                                songUrl = it.song_link,
+                                                                albumCoverUrl = it.spotify?.album?.images?.firstOrNull()?.url
+                                                                    ?: ""
+                                                            )
+                                                        }
+                                                    }
                                                 }
                                                 musicCardInfo?.let { it1 ->
                                                     viewModel.saveSongToDatabase(
@@ -194,6 +199,7 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel()) {
                                         is Result.Error -> {
                                             songInfo = mapOf("Error" to result.message).toString()
                                             isLoading = false
+                                            Toast.makeText(context,"Error",Toast.LENGTH_LONG).show()
                                         }
                                     }
                                 }
@@ -201,6 +207,8 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel()) {
                             onFailure = { errorMessage ->
                                 songInfo = mapOf("Upload Error" to errorMessage).toString()
                                 isLoading = false
+                                Toast.makeText(context,"Upload Error",Toast.LENGTH_LONG).show()
+
                             }
                         )
                     }
@@ -220,20 +228,24 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel()) {
     ) {
         if (songResponse is Result.Success) {
             (songResponse as? Result.Success<SongResultResponse?>)?.data?.result?.let {
-                Text(text = stringResource(R.string.singer, it.artist), color = Color.Black)
 
-                Text(text = stringResource(R.string.title, it.title?: "Unknown Song Name"), color = Color.Black)
-
-                Text(text = stringResource(R.string.album_text, it.album), color = Color.Black)
+                Text(text = stringResource(R.string.singer, it.artist?:"Unknown Singer"), color = Color.Black)
 
                 Text(
-                    text = stringResource(R.string.release_date_text, it.release_date),
+                    text = stringResource(R.string.title, it.title ?: "Unknown Song Name"),
                     color = Color.Black
                 )
-                Text(text = stringResource(R.string.label_text, it.label), color = Color.Black)
+
+                Text(text = stringResource(R.string.album_text, it.album?:"Unknown Album"), color = Color.Black)
 
                 Text(
-                    text = stringResource(R.string.time_code_text, it.timecode),
+                    text = stringResource(R.string.release_date_text, it.release_date?:"Unknown Release Date"),
+                    color = Color.Black
+                )
+                Text(text = stringResource(R.string.label_text, it.label?:"Unknown Label"), color = Color.Black)
+
+                Text(
+                    text = stringResource(R.string.time_code_text, it.timecode?:"Unknown Time Code"),
                     color = Color.Black
                 )
                 ClickableText(text = buildAnnotatedString {
@@ -262,7 +274,7 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel()) {
                     }
                 })
 
-                it.spotify.album.images.firstOrNull()?.let { songImageUrl ->
+                it.spotify?.album?.images?.firstOrNull()?.let { songImageUrl ->
                     AsyncImage(
                         model = songImageUrl.url,
                         contentDescription = "Song Image",

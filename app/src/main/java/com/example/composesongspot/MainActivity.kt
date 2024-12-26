@@ -3,8 +3,6 @@ package com.example.composesongspot
 import android.os.Build
 import android.os.Bundle
 import android.view.View
-import android.view.WindowInsets
-import android.view.WindowInsetsController
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -17,7 +15,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.composesongspot.ui.theme.ComposeSongSpotTheme
 import com.example.composesongspot.ui.theme.MainView
 import com.example.composesongspot.ui.theme.bottom_screen.Home
-import com.google.firebase.ktx.BuildConfig
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
