@@ -6,6 +6,7 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,8 +15,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.composesongspot.BuildConfig.API_TOKEN
 import com.example.composesongspot.R
@@ -52,7 +58,7 @@ import com.google.firebase.auth.auth
 import java.io.File
 
 @Composable
-fun FindSong(viewModel: SongViewModel = hiltViewModel()) {
+fun FindSong(viewModel: SongViewModel = hiltViewModel(),navController: NavController) {
     val context = LocalContext.current
     val activity = context as Activity
     val recorder = remember { AndroidAudioRecorder(context) }
@@ -81,6 +87,7 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel()) {
     LaunchedEffect(key1 = recordAudioLauncher) {
         recordAudioLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
     }
+//    Spacer(modifier = Modifier.padding(bottom = 40.dp, top = 20.dp))
 
     Column(
         modifier = Modifier
@@ -168,19 +175,23 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel()) {
                                                 ).toString()
 
                                                 val musicCardInfo = it.title?.let { it1 ->
-                                                    MusicCardInfo(
-                                                        songName = it1,
-                                                        artistName = it.artist.orEmpty(),
-                                                        albumName = it.album.orEmpty(),
-                                                        whoShared = Firebase.auth.currentUser?.uid
-                                                            ?: "",
-                                                        userName = Firebase.auth.currentUser?.displayName
-                                                            ?: "Unknown",
-                                                        location = "",
-                                                        songUrl = it.song_link,
-                                                        albumCoverUrl = it.spotify?.album?.images?.firstOrNull()?.url
-                                                            ?: ""
-                                                    )
+                                                    it.artist?.let { it2 ->
+                                                        it.album?.let { it3 ->
+                                                            MusicCardInfo(
+                                                                songName = it1.ifBlank { "Unknown Song Name" },
+                                                                artistName = it2.ifBlank { "Unknown Artist" },
+                                                                albumName = it3.ifBlank { "Unknown Album" },
+                                                                whoShared = Firebase.auth.currentUser?.uid
+                                                                    ?: "",
+                                                                userName = Firebase.auth.currentUser?.displayName
+                                                                    ?: "Unknown",
+                                                                location = "",
+                                                                songUrl = it.song_link,
+                                                                albumCoverUrl = it.spotify?.album?.images?.firstOrNull()?.url
+                                                                    ?: ""
+                                                            )
+                                                        }
+                                                    }
                                                 }
                                                 musicCardInfo?.let { it1 ->
                                                     viewModel.saveSongToDatabase(
@@ -276,5 +287,26 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel()) {
                 }
             }
         }
+    }
+}
+@Composable
+fun TopAppBar(navController: NavController) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceAround
+    ) {
+        Spacer(modifier = Modifier.padding(bottom = 40.dp, top = 20.dp))
+
+        Icon(
+            imageVector = Icons.Default.ArrowBack,
+            contentDescription = "Back",
+            tint = Color.Black,
+            modifier = Modifier
+                .size(44.dp)
+                .padding(start = 10.dp)
+                .clickable {
+                    navController.navigate("Home")
+                }
+        )
     }
 }

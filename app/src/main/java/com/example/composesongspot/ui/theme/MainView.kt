@@ -250,7 +250,7 @@ fun Navigation(navController: NavController, viewModel: MainViewModel, pd: Paddi
             Message(navController)
         }
         composable(Screen.BottomScreen.Library.bRoute) {
-            FindSong()
+            FindSong(viewModel(), navController)
         }
         composable(Screen.BottomSheet.About.route) {
             About(navController)

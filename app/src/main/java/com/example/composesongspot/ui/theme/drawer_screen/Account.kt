@@ -9,19 +9,20 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -31,6 +32,7 @@ import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,15 +40,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -56,6 +57,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
 import com.example.composesongspot.R
 import com.example.composesongspot.ui.theme.ViewModel.SongViewModel
 import com.google.firebase.auth.ktx.auth
@@ -69,7 +71,7 @@ fun Account(viewModel: SongViewModel = hiltViewModel(), navController: NavContro
             navController = navController
         )
         Spacer(modifier = Modifier.height(4.dp))
-        ProfileSection(modifier = Modifier.padding(horizontal = 20.dp), onProfileImageChange = {})
+        ProfileSection(modifier = Modifier.padding(horizontal = 20.dp))
 
         LazyColumnForUser(viewModel, currentUser = Firebase.auth.currentUser!!.uid)
 
@@ -101,7 +103,9 @@ fun Account(viewModel: SongViewModel = hiltViewModel(), navController: NavContro
             locationPermissionRequest.launch(
                 arrayOf(
                     Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.READ_EXTERNAL_STORAGE
                 )
             )
         }
@@ -153,12 +157,14 @@ fun Account(viewModel: SongViewModel = hiltViewModel(), navController: NavContro
 }
 
 @Composable
-fun TopAppBar(name: String, navController: NavController, modifier: Modifier = Modifier) {
+fun TopAppBar(name: String, navController: NavController) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceAround,
-        modifier = modifier.fillMaxWidth()
+        horizontalArrangement = Arrangement.SpaceAround
+
     ) {
+        Spacer(modifier = Modifier.padding(bottom = 40.dp, top = 20.dp))
+
         Icon(
             imageVector = Icons.Default.ArrowBack,
             contentDescription = "Back",
@@ -170,6 +176,7 @@ fun TopAppBar(name: String, navController: NavController, modifier: Modifier = M
                     navController.navigate("Home")
                 }
         )
+        Spacer(modifier = Modifier.padding(start = 110.dp))
         Text(
             text = name,
             overflow = TextOverflow.Ellipsis,
@@ -182,54 +189,60 @@ fun TopAppBar(name: String, navController: NavController, modifier: Modifier = M
 
 @Composable
 fun ProfileSection(
-    modifier: Modifier = Modifier,
-    onProfileImageChange: (Uri?) -> Unit
+    modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
-
+    var imageUri by rememberSaveable { mutableStateOf("") }
+    val painter = rememberImagePainter(
+        if (imageUri.isEmpty())
+            R.drawable.winking
+        else
+            imageUri
+    )
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        imageUri = uri
-        onProfileImageChange(uri)
+        uri?.let { imageUri = it.toString() }
+
     }
 
-    Column(modifier = modifier.fillMaxWidth()) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-        ) {
-            RoundImage(
-                image = imageUri?.let { rememberAsyncImagePainter(it) }
-                    ?: painterResource(id = R.drawable.winking),
-                modifier = Modifier
-                    .size(100.dp)
-                    .weight(3f)
-                    .clickable {
-
-                    }
-            )
-        }
-    }
-}
-
-
-
-@Composable
-fun RoundImage(image: Painter, modifier: Modifier = Modifier) {
-    Image(
-        painter = image,
-        contentDescription = null,
+    Row(
         modifier = modifier
-            .aspectRatio(1f, matchHeightConstraintsFirst = true)
-            .border(width = 1.dp, color = Color.LightGray, shape = CircleShape)
-            .padding(3.dp)
-            .clip(CircleShape)
-    )
-    Spacer(modifier = Modifier.height(10.dp))
+            .fillMaxWidth()
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Card(
+            shape = CircleShape,
+            modifier = Modifier
+                .padding(8.dp)
+                .size(100.dp)
+        ) {
+            rememberAsyncImagePainter(imageUri).let {
+                Image(
+                    painter = painter,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .clickable { launcher.launch("image/*") },
+                    contentScale = ContentScale.Crop
+                )
+            }
+        }
+        Icon(
+            imageVector = Icons.Default.Edit,
+            contentDescription = "Edit Profile Picture",
+            tint = Color.White,
+            modifier = Modifier
+                .offset(x = (-13).dp, y = 30.dp)
+                .size(25.dp)
+                .background(Color.DarkGray, CircleShape)
+                .padding(4.dp)
+                .clickable {
+                    launcher.launch("image/*")
+                }
+        )
+    }
 }
 
 @Composable
