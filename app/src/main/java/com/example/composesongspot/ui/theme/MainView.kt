@@ -44,6 +44,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -240,7 +241,7 @@ fun Navigation(navController: NavController, viewModel: MainViewModel, pd: Paddi
             SignIn(navController, viewModel())
         }
         composable(Screen.DrawerScreen.Account.route) {
-            Account()
+            Account(viewModel(), navController)
         }
         composable(Screen.BottomScreen.Home.bRoute) {
             Home(navController)

@@ -171,6 +171,46 @@ class SongViewModel @Inject constructor() : ViewModel() {
         }
     }
 
+    fun getAllSongsForUser(
+        currentUser: String,
+        onSuccess: (List<MusicCardInfo>) -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        val db = com.google.firebase.Firebase.database
+        val reference = db.reference.child("songs")
+
+        try {
+            reference.get()
+                .addOnSuccessListener { listResult ->
+                    Log.d("SongViewModel", "getAllSongs: ${listResult.value}")
+                    val songsList = mutableListOf<MusicCardInfo>()
+                    listResult.children.forEach { item ->
+                        val songValueMap = item.value as? Map<*, *>
+                        val whoShared = songValueMap?.get("whoShared").toString()
+
+                        if (whoShared == currentUser) {
+                            val songInfo = MusicCardInfo(
+                                songName = songValueMap?.get("songName").toString(),
+                                artistName = songValueMap?.get("artistName").toString(),
+                                albumName = songValueMap?.get("albumName").toString(),
+                                whoShared = songValueMap?.get("whoShared").toString(),
+                                userName = songValueMap?.get("userName").toString(),
+                                location = songValueMap?.get("location").toString(),
+                                songUrl = songValueMap?.get("songUrl").toString(),
+                                albumCoverUrl = songValueMap?.get("albumCoverUrl").toString()
+                            )
+                            songsList.add(songInfo)
+                        }
+                    }
+                    onSuccess(songsList)
+                }.addOnFailureListener { exception ->
+                    onFailure("Failed to list all songs: ${exception.message}")
+                }
+        } catch (e: Exception) {
+            onFailure("Permission error: ${e.message}")
+        }
+    }
+
     fun saveSongToDatabase(
         song: MusicCardInfo,
         onSuccess: () -> Unit,
@@ -199,7 +239,11 @@ class SongViewModel @Inject constructor() : ViewModel() {
             }
     }
 
-    private fun fetchLocation(context: Context, onSuccess: (Location?) -> Unit, onFailure: (String) -> Unit) {
+    private fun fetchLocation(
+        context: Context,
+        onSuccess: (Location?) -> Unit,
+        onFailure: (String) -> Unit
+    ) {
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
         try {
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
@@ -218,11 +262,13 @@ class SongViewModel @Inject constructor() : ViewModel() {
             val addresses = geocoder.getFromLocation(latitude, longitude, 1)
             if (!addresses.isNullOrEmpty()) {
                 val address = addresses[0]
-                "${address.locality ?: context.getString(R.string.bilinmeyen_sehir)}, ${address.countryName ?: context.getString(
-                    R.string.bilinmeyen_ulke
-                )}"
+                "${address.locality ?: context.getString(R.string.bilinmeyen_sehir)}, ${
+                    address.countryName ?: context.getString(
+                        R.string.bilinmeyen_ulke
+                    )
+                }"
             } else {
-                 "Konum bilgisi bulunamadı"
+                "Konum bilgisi bulunamadı"
             }
         } catch (e: Exception) {
             Log.e("Geocoder", "Hata: ${e.message}")
