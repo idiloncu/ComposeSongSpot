@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.composesongspot.ui.theme.ComposeSongSpotTheme
 import com.example.composesongspot.ui.theme.MainView
 import com.example.composesongspot.ui.theme.bottom_screen.Home
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -25,7 +26,7 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            Home(navController=rememberNavController())
+            Home(navController = rememberNavController())
             ComposeSongSpotTheme {
                 window.decorView.apply {
                     systemUiVisibility =
@@ -43,6 +44,10 @@ class MainActivity : ComponentActivity() {
                     MainView()
                 }
             }
+        }
+        FirebaseMessaging.getInstance().subscribeToTopic("Messages").addOnCompleteListener { task ->
+            val msg = if (task.isSuccessful) "Done" else "Failed"
+            println(msg)
         }
     }
 }

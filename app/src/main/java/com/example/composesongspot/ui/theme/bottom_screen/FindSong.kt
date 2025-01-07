@@ -87,7 +87,6 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel(),navController: NavContro
     LaunchedEffect(key1 = recordAudioLauncher) {
         recordAudioLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
     }
-//    Spacer(modifier = Modifier.padding(bottom = 40.dp, top = 20.dp))
 
     Column(
         modifier = Modifier
@@ -132,9 +131,14 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel(),navController: NavContro
                 },
             ) {
                 Text(
-                    text = if (isRecording) stringResource(R.string.recording) else stringResource(
-                        R.string.start
-                    )
+                    text = if (isRecording) {
+                        stringResource(R.string.recording)
+                    }
+                    else {
+                        stringResource(
+                            R.string.start
+                        )
+                    }
                 )
             }
             Spacer(modifier = Modifier.padding(8.dp))
@@ -143,7 +147,7 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel(),navController: NavContro
                     recorder.stop()
                     isRecording = false
                     isLoading = true
-                    if (audioFile == null || !audioFile!!.exists()) {
+                    if (audioFile == null || !audioFile!!.exists() || audioFile!!.length() == 0L) {
                         Toast.makeText(
                             context,
                             context.getString(R.string.audio_file_is_null_or_does_not_exist),
@@ -163,15 +167,15 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel(),navController: NavContro
                                             context.getString(R.string.loading)
 
                                         is Result.Success -> {
-                                            result.data.result.let {
+                                            result?.data?.result?.let {
                                                 songInfo = mapOf(
-                                                    context.getString(R.string.song_title) to it.title,
-                                                    context.getString(R.string.artist) to it.artist,
-                                                    context.getString(R.string.album) to it.album,
-                                                    context.getString(R.string.release_date) to it.release_date,
-                                                    context.getString(R.string.label) to it.label,
-                                                    context.getString(R.string.time_code) to it.timecode,
-                                                    context.getString(R.string.song_link) to it.song_link
+                                                    context.getString(R.string.song_title) to it.title?.ifBlank {"Unknown Song Name"},
+                                                    context.getString(R.string.artist) to it.artist?.ifBlank { "Unknown Artist" },
+                                                    context.getString(R.string.album) to it.album?.ifBlank { "Unknown Album" },
+                                                    context.getString(R.string.release_date) to it.release_date?.ifBlank { "Unknown Release Date" },
+                                                    context.getString(R.string.label) to it.label?.ifBlank { "Unknown Label" },
+                                                    context.getString(R.string.time_code) to it.timecode?.ifBlank { "Unknown Time Code" },
+                                                    context.getString(R.string.song_link) to it.song_link?.ifBlank { "Unknown Link" }
                                                 ).toString()
 
                                                 val musicCardInfo = it.title?.let { it1 ->
@@ -181,14 +185,11 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel(),navController: NavContro
                                                                 songName = it1.ifBlank { "Unknown Song Name" },
                                                                 artistName = it2.ifBlank { "Unknown Artist" },
                                                                 albumName = it3.ifBlank { "Unknown Album" },
-                                                                whoShared = Firebase.auth.currentUser?.uid
-                                                                    ?: "",
-                                                                userName = Firebase.auth.currentUser?.displayName
-                                                                    ?: "Unknown",
+                                                                whoShared = Firebase.auth.currentUser?.uid ?: "",
+                                                                userName = Firebase.auth.currentUser?.displayName ?: "Unknown",
                                                                 location = "",
                                                                 songUrl = it.song_link,
-                                                                albumCoverUrl = it.spotify?.album?.images?.firstOrNull()?.url
-                                                                    ?: ""
+                                                                albumCoverUrl = it.spotify?.album?.images?.firstOrNull()?.url ?: ""
                                                             )
                                                         }
                                                     }

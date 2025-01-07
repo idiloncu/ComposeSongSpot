@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ComposeSongSpot</string>
+    <string name="app_name" translatable="false">SongSpot</string>
     <string name="about_part1">"    The ultimate app for music lovers to discover songs effortlessly!"</string>
     <string name="about_part2">"    Simply enter the URL of a song or share a snippet, and SongSpot will find it in seconds! "</string>
     <string name="about_part3">The app displays the song\'s title, artist, album, and detailed information about the person sharing it, including the location.</string>

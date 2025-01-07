@@ -69,6 +69,8 @@ dependencies {
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.storage.ktx)
     implementation(libs.play.services.location)
+    implementation(libs.firebase.messaging.ktx)
+    implementation(libs.firebase.messaging)
 
     val nav_version = "2.7.5"
     val compose_version = "1.6.0-alpha08"
@@ -81,7 +83,6 @@ dependencies {
     implementation ("com.github.bumptech.glide:glide:4.12.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
     implementation ("com.github.bumptech.glide:okhttp3-integration:4.12.0")
-    implementation ("io.coil-kt:coil:2.7.0")
     implementation ("io.coil-kt:coil-svg:2.7.0")
     implementation ("com.google.code.gson:gson:2.11.0")
 
