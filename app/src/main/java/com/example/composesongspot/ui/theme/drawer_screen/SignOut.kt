@@ -3,6 +3,7 @@ package com.example.composesongspot.ui.theme.drawer_screen
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Text
 import androidx.compose.material3.Button
 import androidx.compose.runtime.Composable
@@ -16,8 +17,6 @@ import androidx.navigation.NavController
 import com.example.composesongspot.R
 import com.example.composesongspot.ui.theme.ViewModel.AuthState
 import com.example.composesongspot.ui.theme.ViewModel.AuthViewModel
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 
 @Composable
 fun SignOut(navController: NavController, authViewModel: AuthViewModel) {

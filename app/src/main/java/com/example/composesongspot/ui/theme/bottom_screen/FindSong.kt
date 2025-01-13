@@ -3,6 +3,7 @@ package com.example.composesongspot.ui.theme.bottom_screen
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -55,10 +56,12 @@ import com.example.composesongspot.ui.theme.network.Result
 import com.example.composesongspot.ui.theme.network.SongResultResponse
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import kotlinx.coroutines.delay
 import java.io.File
 
+
 @Composable
-fun FindSong(viewModel: SongViewModel = hiltViewModel(),navController: NavController) {
+fun FindSong(viewModel: SongViewModel = hiltViewModel(), navController: NavController) {
     val context = LocalContext.current
     val activity = context as Activity
     val recorder = remember { AndroidAudioRecorder(context) }
@@ -67,6 +70,16 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel(),navController: NavContro
     var songInfo by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     val songResponse by viewModel.searchSongResponse.collectAsState()
+    val TAG = "FindSong"
+    val second = remember { mutableStateOf(10) } // Geri sayım başlangıç değeri
+    var isStopButtonEnabled by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        while (second.value > 0) {
+            delay(1000L)
+            second.value -= 1
+        }
+    }
 
     LaunchedEffect(Unit) {
         ActivityCompat.requestPermissions(
@@ -119,6 +132,8 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel(),navController: NavContro
                             recorder.start(it)
                             audioFile = it
                             isRecording = true
+                            second.value = 10
+                            isStopButtonEnabled = false
                         }
                     } else if (isRecording) {
                         isLoading = true
@@ -131,23 +146,20 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel(),navController: NavContro
                 },
             ) {
                 Text(
-                    text = if (isRecording) {
-                        stringResource(R.string.recording)
-                    }
-                    else {
-                        stringResource(
-                            R.string.start
-                        )
-                    }
+                    text = if (isRecording) stringResource(R.string.recording) else stringResource(
+                        R.string.start
+                    )
                 )
             }
+
             Spacer(modifier = Modifier.padding(8.dp))
+
             Button(onClick = {
                 if (isRecording) {
                     recorder.stop()
                     isRecording = false
                     isLoading = true
-                    if (audioFile == null || !audioFile!!.exists() || audioFile!!.length() == 0L) {
+                    if (audioFile == null || !audioFile!!.exists()) {
                         Toast.makeText(
                             context,
                             context.getString(R.string.audio_file_is_null_or_does_not_exist),
@@ -157,6 +169,8 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel(),navController: NavContro
                     audioFile?.let { file ->
                         viewModel.uploadMp3(file,
                             onSuccess = { downloadUrl ->
+                                Log.d(TAG, "FindSong: $downloadUrl")
+                                Log.d("FindSong", "FindSong: ${file.name}")
                                 viewModel.searchSong(
                                     apiToken = API_TOKEN,
                                     url = downloadUrl,
@@ -169,7 +183,7 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel(),navController: NavContro
                                         is Result.Success -> {
                                             result?.data?.result?.let {
                                                 songInfo = mapOf(
-                                                    context.getString(R.string.song_title) to it.title?.ifBlank {"Unknown Song Name"},
+                                                    context.getString(R.string.song_title) to it.title?.ifBlank { "Unknown Song Name" },
                                                     context.getString(R.string.artist) to it.artist?.ifBlank { "Unknown Artist" },
                                                     context.getString(R.string.album) to it.album?.ifBlank { "Unknown Album" },
                                                     context.getString(R.string.release_date) to it.release_date?.ifBlank { "Unknown Release Date" },
@@ -178,6 +192,16 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel(),navController: NavContro
                                                     context.getString(R.string.song_link) to it.song_link?.ifBlank { "Unknown Link" }
                                                 ).toString()
 
+                                                Log.d(
+                                                    TAG,
+                                                    "searchSong-title: ${result.data.result.title}"
+                                                )
+                                                Log.d(
+                                                    TAG,
+                                                    "searchSong-artist: ${result.data.result.artist}"
+                                                )
+                                                Log.d(TAG, "searchSong-downloadUrl: $downloadUrl")
+
                                                 val musicCardInfo = it.title?.let { it1 ->
                                                     it.artist?.let { it2 ->
                                                         it.album?.let { it3 ->
@@ -185,11 +209,14 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel(),navController: NavContro
                                                                 songName = it1.ifBlank { "Unknown Song Name" },
                                                                 artistName = it2.ifBlank { "Unknown Artist" },
                                                                 albumName = it3.ifBlank { "Unknown Album" },
-                                                                whoShared = Firebase.auth.currentUser?.uid ?: "",
-                                                                userName = Firebase.auth.currentUser?.displayName ?: "Unknown",
+                                                                whoShared = Firebase.auth.currentUser?.uid
+                                                                    ?: "",
+                                                                userName = Firebase.auth.currentUser?.displayName
+                                                                    ?: "Unknown",
                                                                 location = "",
                                                                 songUrl = it.song_link,
-                                                                albumCoverUrl = it.spotify?.album?.images?.firstOrNull()?.url ?: ""
+                                                                albumCoverUrl = it.spotify?.album?.images?.firstOrNull()?.url
+                                                                    ?: ""
                                                             )
                                                         }
                                                     }
@@ -197,8 +224,18 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel(),navController: NavContro
                                                 musicCardInfo?.let { it1 ->
                                                     viewModel.saveSongToDatabase(
                                                         it1,
-                                                        onSuccess = {},
-                                                        onFailure = {})
+                                                        onSuccess = {
+                                                            Log.d(
+                                                                "FindSong",
+                                                                "saveSongToDatabase: Success"
+                                                            )
+                                                        },
+                                                        onFailure = {
+                                                            Log.d(
+                                                                "FindSong",
+                                                                "saveSongToDatabase: Failed $it"
+                                                            )
+                                                        })
                                                 }
                                             }
 
@@ -208,6 +245,7 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel(),navController: NavContro
                                         is Result.Error -> {
                                             songInfo = mapOf("Error" to result.message).toString()
                                             isLoading = false
+                                            Toast.makeText(context,"SOUND DOES NOT EXIST" , Toast.LENGTH_LONG).show()
                                         }
                                     }
                                 }
@@ -234,20 +272,38 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel(),navController: NavContro
     ) {
         if (songResponse is Result.Success) {
             (songResponse as? Result.Success<SongResultResponse?>)?.data?.result?.let {
-                Text(text = stringResource(R.string.singer, it.artist?: "Unknown Artist"), color = Color.Black)
-
-                Text(text = stringResource(R.string.title, it.title?: "Unknown Song Name"), color = Color.Black)
-
-                Text(text = stringResource(R.string.album_text, it.album?: "Unknown Album"), color = Color.Black)
-
                 Text(
-                    text = stringResource(R.string.release_date_text, it.release_date?: "Unknown Release Date"),
+                    text = stringResource(R.string.singer, it.artist ?: "Unknown Artist"),
                     color = Color.Black
                 )
-                Text(text = stringResource(R.string.label_text, it.label?: "Unknown Label"), color = Color.Black)
 
                 Text(
-                    text = stringResource(R.string.time_code_text, it.timecode?: "Unknown Time Code"),
+                    text = stringResource(R.string.title, it.title ?: "Unknown Song Name"),
+                    color = Color.Black
+                )
+
+                Text(
+                    text = stringResource(R.string.album_text, it.album ?: "Unknown Album"),
+                    color = Color.Black
+                )
+
+                Text(
+                    text = stringResource(
+                        R.string.release_date_text,
+                        it.release_date ?: "Unknown Release Date"
+                    ),
+                    color = Color.Black
+                )
+                Text(
+                    text = stringResource(R.string.label_text, it.label ?: "Unknown Label"),
+                    color = Color.Black
+                )
+
+                Text(
+                    text = stringResource(
+                        R.string.time_code_text,
+                        it.timecode ?: "Unknown Time Code"
+                    ),
                     color = Color.Black
                 )
                 ClickableText(text = buildAnnotatedString {
@@ -290,6 +346,7 @@ fun FindSong(viewModel: SongViewModel = hiltViewModel(),navController: NavContro
         }
     }
 }
+
 @Composable
 fun TopAppBar(navController: NavController) {
     Row(
@@ -311,3 +368,5 @@ fun TopAppBar(navController: NavController) {
         )
     }
 }
+
+

@@ -54,6 +54,7 @@
     <string name="recorded">RECORDED…</string>
     <string name="shared_by">Shared by: </string>
     <string name="location">Location: </string>
-    <string name="bilinmeyen_sehir">Bilinmeyen Şehir</string>
-    <string name="bilinmeyen_ulke">Bilinmeyen Ülke</string>
+    <string name="bilinmeyen_sehir"> Unknow City </string>
+    <string name="bilinmeyen_ulke">Unknow Country</string>
+    <string name="request_timed_out">Request timed out.</string>
 </resources>

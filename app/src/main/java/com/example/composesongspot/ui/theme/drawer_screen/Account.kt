@@ -1,5 +1,6 @@
 package com.example.composesongspot.ui.theme.drawer_screen
 
+//noinspection UsingMaterialAndMaterial3Libraries
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -28,10 +29,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Card
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -166,7 +169,7 @@ fun TopAppBar(name: String, navController: NavController) {
         Spacer(modifier = Modifier.padding(bottom = 40.dp, top = 20.dp))
 
         Icon(
-            imageVector = Icons.Default.ArrowBack,
+            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
             contentDescription = "Back",
             tint = Color.Black,
             modifier = Modifier

@@ -64,10 +64,11 @@ fun ChatScr(
     receiverId: String,
 ) {
 
-    Scaffold {
+    Scaffold { contentPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(contentPadding)
                 .padding(bottom = 2.dp)
         ) {
             val viewModel: ChatViewModel = viewModel()

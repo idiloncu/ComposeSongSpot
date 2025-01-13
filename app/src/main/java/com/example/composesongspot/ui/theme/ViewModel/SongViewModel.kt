@@ -48,6 +48,7 @@ class SongViewModel @Inject constructor() : ViewModel() {
     val songs: State<List<MusicCardInfo>> = _songs
     private val _errorMessage = mutableStateOf<String?>(null)
     val errorMessage: State<String?> = _errorMessage
+    val TAG = "SongViewModel"
 
     fun searchSong(
         apiToken: String,
@@ -72,6 +73,8 @@ class SongViewModel @Inject constructor() : ViewModel() {
                                 callback(Result.Error("Music not found"))
                             }
                             println(response.message())
+                            Log.d(TAG, "response body: ${response.body()}")
+                            Log.d(TAG, "response message : ${response.message()}")
                         }
 
                         override fun onFailure(call: Call<SongResultResponse>, t: Throwable) {
@@ -101,7 +104,10 @@ class SongViewModel @Inject constructor() : ViewModel() {
                 val postMap = hashMapOf<String, Any>()
                 postMap.put("downloadUrl", downloadUrl)
             }
+            Log.d(TAG, "InuploadMp3: ${audioReference.downloadUrl}")
         }
+        Log.d(TAG, "uploadMp3: $mp3Name")
+        Log.d(TAG, "uploadMp3: ${audioReference.downloadUrl} ")
     }
 
     fun postAudioToServer(downloadUrl: String) {
@@ -145,7 +151,7 @@ class SongViewModel @Inject constructor() : ViewModel() {
         try {
             reference.get()
                 .addOnSuccessListener { listResult ->
-                    Log.d("SongViewModel", "getAllSongs: ${listResult.value}")
+                    Log.d(TAG, "getAllSongs: ${listResult.value}")
                     val songsList = mutableListOf<MusicCardInfo>()
                     listResult.children.forEach { item ->
                         val songValueMap = item.value as? Map<*, *>

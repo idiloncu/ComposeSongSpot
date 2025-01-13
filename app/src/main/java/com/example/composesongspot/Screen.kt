@@ -8,7 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
+import com.example.composesongspot.R.drawable.baseline_account_circle_24
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
@@ -76,7 +76,7 @@ sealed class Screen(val title: String, val route: String) {
         object Account : DrawerScreen(
             "Account",
             "account",
-            R.drawable.baseline_account_circle_24
+            baseline_account_circle_24
         )
 
         object SignIn : DrawerScreen(
@@ -117,10 +117,10 @@ sealed class Screen(val title: String, val route: String) {
     }
 
     sealed class Comment(
-        val cTitle: String,
-        val cRoute: String,
+        private val cTitle: String,
+        private val cRoute: String,
     ) : Screen(cTitle, cRoute) {
-        object Comment : CommentScreen(
+        data object Comment : CommentScreen(
             "Comment",
             "comment"
         )

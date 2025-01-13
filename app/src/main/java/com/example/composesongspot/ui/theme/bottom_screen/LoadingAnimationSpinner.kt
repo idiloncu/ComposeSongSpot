@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,7 +34,7 @@ import com.example.composesongspot.ui.theme.Typography
 fun LoadingAnimationSpinner() {
         Box(modifier = Modifier.fillMaxSize())
         {
-            val infiniteTransition = rememberInfiniteTransition()
+            val infiniteTransition = rememberInfiniteTransition(label = "Loading Animation")
             val angle by infiniteTransition.animateFloat(
                 initialValue = 0f,
                 targetValue = 360f,
@@ -97,5 +96,3 @@ fun LoadingAnimationSpinner() {
             }
         }
     }
-
-

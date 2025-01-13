@@ -22,7 +22,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Card
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -147,7 +149,7 @@ fun LazyColumnDemo(navController: NavController, viewModel: SongViewModel) {
     }
 
     LazyColumn(content = {
-        itemsIndexed(musicList) { index, item ->
+        itemsIndexed(musicList) { _, item ->
             CardItems(item = item)
         }
     })

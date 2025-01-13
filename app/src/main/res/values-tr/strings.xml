@@ -54,4 +54,7 @@
     <string name="recorded">KAYDEDİLİYOR...</string>
     <string name="shared_by">Paylaşan </string>
     <string name="location">Konum </string>
+    <string name="request_timed_out"> Talep zaman aşımına uğradı </string>
+    <string name="bilinmeyen_ulke">Bilinmeyen Ülke</string>
+    <string name="bilinmeyen_sehir">Bilinmeyen Şehir</string>
 </resources>
